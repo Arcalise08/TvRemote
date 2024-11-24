@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles for the slider */
+input[type="range"] {
+    -webkit-appearance: none; /* Remove default styles for WebKit browsers */
+    appearance: none; /* Remove default styles for other browsers */
+    width: 100%; /* Full width */
+    height: 12px; /* Track thickness */
+    background: #d1d5db; /* Tailwind gray-300 */
+    border-radius: 6px; /* Rounded track */
+    outline: none; /* Remove outline on focus */
+    cursor: pointer; /* Pointer cursor */
+    transition: background 0.3s ease; /* Smooth background transitions */
+}
+
+/* Track styles for WebKit browsers */
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 12px; /* Track thickness */
+    background: #d1d5db; /* Tailwind gray-300 */
+    border-radius: 6px; /* Rounded track */
+}
+
+/* Thumb styles for WebKit browsers */
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Remove default styling */
+    height: 20px; /* Thumb height */
+    width: 20px; /* Thumb width */
+    background: #000; /* Black thumb */
+    border-radius: 50%; /* Circular thumb */
+    margin-top: -4px; /* Center the thumb vertically */
+    cursor: pointer; /* Pointer cursor */
+    transition: transform 0.2s ease; /* Add thumb animation on interaction */
+}
+
+/* Add scaling effect when thumb is active (WebKit browsers) */
+input[type="range"]::-webkit-slider-thumb:active {
+    transform: scale(1.2); /* Enlarge the thumb on active */
+}
+
+/* Track styles for Mozilla Firefox */
+input[type="range"]::-moz-range-track {
+    height: 12px; /* Track thickness */
+    background: #d1d5db; /* Tailwind gray-300 */
+    border-radius: 6px; /* Rounded track */
+}
+
+/* Thumb styles for Mozilla Firefox */
+input[type="range"]::-moz-range-thumb {
+    height: 20px; /* Thumb height */
+    width: 20px; /* Thumb width */
+    background: #000; /* Black thumb */
+    border-radius: 50%; /* Circular thumb */
+    cursor: pointer; /* Pointer cursor */
+    transition: transform 0.2s ease; /* Add thumb animation on interaction */
+}
+
+/* Add scaling effect when thumb is active (Firefox) */
+input[type="range"]::-moz-range-thumb:active {
+    transform: scale(1.2); /* Enlarge the thumb on active */
+}
+
+/* Track styles for Microsoft Edge */
+input[type="range"]::-ms-track {
+    width: 100%; /* Full width */
+    height: 12px; /* Track thickness */
+    background: transparent; /* Transparent background for Edge */
+    border-color: transparent; /* Remove default borders */
+    color: transparent; /* Hide default color */
+}
+
+/* Thumb styles for Microsoft Edge */
+input[type="range"]::-ms-thumb {
+    height: 20px; /* Thumb height */
+    width: 20px; /* Thumb width */
+    background: #000; /* Black thumb */
+    border-radius: 50%; /* Circular thumb */
+    cursor: pointer; /* Pointer cursor */
+    transition: transform 0.2s ease; /* Add thumb animation on interaction */
+}
+
+/* Add scaling effect when thumb is active (Edge) */
+input[type="range"]::-ms-thumb:active {
+    transform: scale(1.2); /* Enlarge the thumb on active */
+}
