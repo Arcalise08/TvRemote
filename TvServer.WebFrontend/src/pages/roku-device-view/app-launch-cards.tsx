@@ -1,5 +1,5 @@
 import {ProcessedRokuApp, RokuApp} from "../../models/roku-types.ts";
-import {Button} from "@headlessui/react";
+import PressableIcon from "../../components/pressable-icon.tsx";
 
 
 type AppLaunchCardProps = {
@@ -56,13 +56,13 @@ const AppLaunchCards = ({onClick, rokuApps} : AppLaunchCardProps) => {
         <div className={"grid grid-cols-2 gap-2 w-full mt-4"}>
             {
                 sortBasedOnFavorites().map((app, key) => (
-                    <Button
+                    <PressableIcon
+                        key={key}
                         onClick={() => onClick(app.rokuApp)}
-                        key={key}>
-                        <img 
-                             className={"cursor-pointer hover:opacity-90 active:scale-95 select-none pointer-events-none"}
-                             src={app.imgUrl} width={200} height={150}/>
-                    </Button>
+                        src={app.imgUrl}
+                        imgWidth={200}
+                        imgHeight={150}
+                    />
                 ))
             }
         </div>

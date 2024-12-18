@@ -17,26 +17,26 @@ const InputSelector = ({activeInput, inputOptions, changeInput} : InputSelectorP
         const searchString = itemName.toLowerCase();
         if (searchString.includes("nintendo"))
             return (
-                <img src={"/images/switch.png"} width={width} height={height}/>
+                <img className={"select-none pointer-events-none"} src={"/images/switch.png"} width={width} height={height}/>
             )
         if (searchString.includes("xbox"))
             return (
-                <img src={"/images/xbox.jpg"} width={width} height={height}/>
+                <img className={"select-none pointer-events-none"} src={"/images/xbox.jpg"} width={width} height={height}/>
             )
         if (searchString.includes("playstation"))
             return (
-                <img src={"/images/playstation.png"} width={width} height={height}/>
+                <img className={"select-none pointer-events-none"} src={"/images/playstation.png"} width={width} height={height}/>
             )
         if (searchString.includes("game"))
             return (
-                <img src={gameIcon} width={width} height={height}/>
+                <img className={"select-none pointer-events-none"} src={gameIcon} width={width} height={height}/>
             )
         if (searchString.includes("pc"))
             return (
-                <img src={pcIcon} width={width} height={height}/>
+                <img className={"select-none pointer-events-none"} src={pcIcon} width={width} height={height}/>
             )
         return (
-            <img src={hdmiIcon} width={width} height={height}/>
+            <img className={"select-none pointer-events-none"} src={hdmiIcon} width={width} height={height}/>
 
         )
     }

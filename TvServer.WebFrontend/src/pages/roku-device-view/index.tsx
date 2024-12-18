@@ -12,7 +12,7 @@ import useRokuDeviceStore from "../../stores/useRokuDeviceStore.ts";
 import {ProcessedRokuApp, RokuApp, RokuDevice, RokuKeypress} from "../../models/roku-types.ts";
 import VolumeControl from "./volume-control.tsx";
 import RokuRemoteArrows from "./roku-remote-arrows.tsx";
-import {Button} from "@headlessui/react";
+import PressableIcon from "../../components/pressable-icon.tsx";
 
 const RokuDeviceView = () => {
     const [loading, setLoading] = useState(false);
@@ -132,37 +132,30 @@ const RokuDeviceView = () => {
                             />
                         </div>
                         <div className={"flex justify-around"}>
-                            <Button
+                            <PressableIcon
+                                src={MuteButton}
                                 onClick={() => sendPress(RokuKeypress.VolumeMute)}
-    
-                            >
-                                <img
-                                    className={"cursor-pointer hover:opacity-95 active:scale-95 select-none pointer-events-none"}
-                                    src={MuteButton} width={50} height={50}/>
-                            </Button>
-                            <Button
+                                imgWidth={50}
+                                imgHeight={50}
+                            />
+                            <PressableIcon
+                                src={ExitButton}
                                 onClick={() => sendPress(RokuKeypress.Exit)}
-    
-                            >
-                                <img
-                                    className={"cursor-pointer hover:opacity-95 active:scale-95 select-none pointer-events-none"}
-                                    src={ExitButton} width={60} height={60}/>
-                            </Button>
-                            <Button
+                                imgWidth={60}
+                                imgHeight={60}
+                            />
+                            <PressableIcon
+                                src={HomeButton}
                                 onClick={() => sendPress(RokuKeypress.Home)}
-    
-                            >
-                                <img
-                                    className={"cursor-pointer hover:opacity-95 active:scale-95 select-none pointer-events-none"}
-                                    src={HomeButton} width={50} height={50}/>
-                            </Button>
-                            <Button
+                                imgWidth={50}
+                                imgHeight={50}
+                            />
+                            <PressableIcon
+                                src={BackButton}
                                 onClick={() => sendPress(RokuKeypress.Back)}
-                            >
-                                <img
-                                    className={"cursor-pointer hover:opacity-95 active:scale-95 select-none pointer-events-none"}
-                                    src={BackButton} width={50} height={50}/>
-                            </Button>
+                                imgWidth={50}
+                                imgHeight={50}
+                            />
                         </div>
                         <VolumeControl
                             incrementVolume={() => sendPress(RokuKeypress.VolumeUp)}

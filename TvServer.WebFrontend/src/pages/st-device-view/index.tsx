@@ -15,7 +15,7 @@ import {STRemoteButtonKeyStates, STRemoteButtonValues} from "../../models/smart-
 import useCecDeviceStore from "../../stores/useCecDeviceStore.ts";
 import {CecTVDeviceId} from "../../apis/cec-api.ts";
 import StRemoteArrows from "./st-remote-arrows.tsx";
-import {Button} from "@headlessui/react";
+import PressableIcon from "../../components/pressable-icon.tsx";
 
 const STDeviceView = () => {
     const [loading, setLoading] = useState(false);
@@ -159,37 +159,23 @@ const STDeviceView = () => {
                                  />
                             </div>
                             <div className={"flex justify-around"}>
-                                <Button
+                                <PressableIcon
+                                    src={MuteButton}
                                     onClick={() => toggleSTTvMute(selectedSTDevice, true)}
-
-                                >
-                                    <img
-                                        className={"cursor-pointer hover:opacity-95 active:scale-95 select-none pointer-events-none"}
-                                        src={MuteButton} width={50} height={50}/>
-                                </Button>
-                                <Button
+                                />
+                                <PressableIcon
+                                    src={ExitButton}
                                     onClick={() => sendPress(STRemoteButtonValues.Exit, STRemoteButtonKeyStates.Press_And_Released)}
-
-                                >
-                                    <img
-                                        className={"cursor-pointer hover:opacity-95 active:scale-95 select-none pointer-events-none"}
-                                        src={ExitButton} width={60} height={60}/>
-                                </Button>
-                                <Button
+                                />
+                                <PressableIcon
+                                    src={HomeButton}
                                     onClick={() => sendPress(STRemoteButtonValues.Home, STRemoteButtonKeyStates.Press_And_Released)}
-
-                                >
-                                    <img
-                                        className={"cursor-pointer hover:opacity-95 active:scale-95 select-none pointer-events-none"}
-                                        src={HomeButton} width={50} height={50}/>
-                                </Button>
-                                <Button
+                                />
+                                <PressableIcon
+                                    src={BackButton}
                                     onClick={() => sendPress(STRemoteButtonValues.Back, STRemoteButtonKeyStates.Press_And_Released)}
-                                >
-                                    <img
-                                        className={"cursor-pointer hover:opacity-95 active:scale-95 select-none pointer-events-none"}
-                                        src={BackButton} width={50} height={50}/>
-                                </Button>
+                                />
+                                
                             </div>
                             <VolumeControl
                                 volume={selectedSTDevice.volume ?? 0}

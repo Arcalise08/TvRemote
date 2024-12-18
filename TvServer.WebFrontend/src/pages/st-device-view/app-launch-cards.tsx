@@ -1,5 +1,5 @@
 import {KnownSTApiIds} from "../../constants.ts";
-import {Button} from "@headlessui/react";
+import PressableIcon from "../../components/pressable-icon.tsx";
 
 
 type AppLaunchCardProps = {
@@ -8,53 +8,42 @@ type AppLaunchCardProps = {
 const AppLaunchCards = ({onClick} : AppLaunchCardProps) => {
     return (
         <div className={"grid grid-cols-2 gap-2 w-full mt-4"}>
-            <Button
-                onClick={() => onClick(KnownSTApiIds.AmazonVideo)}>
-                <img 
-                     className={"cursor-pointer hover:opacity-90 active:scale-95 select-none pointer-events-none"} 
-                     src={"/images/amazon-prime.jpg"}
-                     width={200} height={150}/>
-
-            </Button>
-            <Button
-                onClick={() => onClick(KnownSTApiIds.DisneyPlus)}>
-                <img 
-                     className={"cursor-pointer hover:opacity-90 active:scale-95 select-none pointer-events-none"} 
-                     src={"/images/disneyplus.webp"}
-                     width={200} height={150}/>
-
-            </Button>
-            <Button
-                onClick={() => onClick(KnownSTApiIds.Hulu)}>
-                <img 
-                     className={"cursor-pointer hover:opacity-90 active:scale-95 select-none pointer-events-none"}
-                     src={"/images/hulu.jpeg"} width={200}
-                     height={150}/>
-
-            </Button>
-            <Button
-                onClick={() => onClick(KnownSTApiIds.Netflix)}>
-                <img 
-                     className={"cursor-pointer hover:opacity-90 active:scale-95 select-none pointer-events-none"} 
-                     src={"/images/netflix.jpg"}
-                     width={200} height={150}/>
-
-            </Button>
-            <Button
-                onClick={() => onClick(KnownSTApiIds.Plex)}>
-                <img 
-                     className={"cursor-pointer hover:opacity-90 active:scale-95 select-none pointer-events-none"} 
-                     src={"/images/plex.webp"}
-                     width={200}
-                     height={150}/>
-            </Button>
-            <Button
-                onClick={() => onClick(KnownSTApiIds.Youtube)}>
-                <img 
-                     className={"cursor-pointer hover:opacity-90 active:scale-95 select-none pointer-events-none"} 
-                     src={"/images/youtube.png"}
-                     width={200} height={150}/>
-            </Button>
+            <PressableIcon
+                onClick={() => onClick(KnownSTApiIds.AmazonVideo)}
+                src={"/images/amazon-prime.jpg"}
+                imgWidth={200}
+                imgHeight={150}
+            />
+            <PressableIcon
+                onClick={() => onClick(KnownSTApiIds.DisneyPlus)}
+                src={"/images/disneyplus.webp"}
+                imgWidth={200}
+                imgHeight={150}
+            />
+            <PressableIcon
+                onClick={() => onClick(KnownSTApiIds.Hulu)}
+                src={"/images/hulu.jpeg"}
+                imgWidth={200}
+                imgHeight={150}
+            />
+            <PressableIcon
+                onClick={() => onClick(KnownSTApiIds.Netflix)}
+                src={"/images/netflix.jpg"}
+                imgWidth={200}
+                imgHeight={150}
+            />
+            <PressableIcon
+                onClick={() => onClick(KnownSTApiIds.Plex)}
+                src={"/images/plex.webp"}
+                imgWidth={200}
+                imgHeight={150}
+            />
+            <PressableIcon
+                onClick={() => onClick(KnownSTApiIds.Youtube)}
+                src={"/images/youtube.png"}
+                imgWidth={200}
+                imgHeight={150}
+            />
         </div>
     );
 };
