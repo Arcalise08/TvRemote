@@ -1,6 +1,7 @@
 import Plus from "../../assets/plus.svg"
 import Minus from "../../assets/minus.svg"
 import {useEffect, useRef, useState} from "react";
+import {Button} from "@headlessui/react";
 
 type VolumeControlProps = {
     volume: number;
@@ -56,18 +57,23 @@ const VolumeControl = (
     return (
         <div className={"flex flex-1 mt-5"}>
             <div className={"flex flex-1 items-center "}>
-                <img
+                <Button
                     onClick={() => changeVolumeToClosestFive("decrement")}
-                    className={"cursor-pointer hover:opacity-90 active:scale-95"} src={Minus} width={25} height={25}/>
+                >
+                    <img
+                        className={"cursor-pointer hover:opacity-90 active:scale-95 select-none pointer-events-none"} src={Minus} width={25} height={25}/>
+                </Button>
                 <input
                     onChange={(e) => setValue(e.target.value)}
                     value={value}
                     type="range"
                     className={"flex-1 mx-2"}
                 />
-                <img
-                    onClick={() => changeVolumeToClosestFive("increment")}
-                    className={"cursor-pointer hover:opacity-90 active:scale-95"}src={Plus} width={25} height={25}/>
+                <Button
+                    onClick={() => changeVolumeToClosestFive("increment")}>
+                    <img
+                        className={"cursor-pointer hover:opacity-90 active:scale-95 select-none pointer-events-none"}src={Plus} width={25} height={25}/>
+                </Button>
             </div>
             <div className={"flex  ml-5"}>
                 <input

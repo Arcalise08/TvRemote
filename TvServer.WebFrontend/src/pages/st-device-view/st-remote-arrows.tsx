@@ -2,7 +2,9 @@ import upArrow from "../../assets/up-arrow.svg"
 import downArrow from "../../assets/down-arrow.svg"
 import leftArrow from "../../assets/left-arrow.svg"
 import rightArrow from "../../assets/right-arrow.svg"
+import {Button} from "@headlessui/react";
 import {useRef} from "react";
+import * as React from "react";
 
 type RemoteArrowsProps = {
     onUpPress: () => void;
@@ -30,7 +32,8 @@ const StRemoteArrows = ({
     const intervalRef = useRef<number | null>(null);
 
     // Handle press start
-    const handlePressStart = (onPress: () => void) => {
+    const handlePressStart = (event: React.MouseEvent | React.TouchEvent,  onPress: () => void) => {
+        event.preventDefault();
         onPress();
         console.log("pressing")
 
@@ -54,25 +57,38 @@ const StRemoteArrows = ({
     return (
         <div className="border border-black flex flex-1 flex-col aspect-square p-2 m-4 max-w-[450px] rounded shadow">
             <div className="flex flex-1 justify-center items-start">
-                <img
-                    onMouseDown={() => handlePressStart(onUpPress)}
+                <Button
+                    onTouchStart={(e) => handlePressStart(e, onUpPress)}
+                    onMouseDown={(e) => handlePressStart(e, onUpPress)}
                     onMouseUp={() => handlePressEnd(onUpRelease)}
+                    onTouchEnd={() => handlePressEnd(onUpRelease)}
                     onMouseLeave={() => handlePressEnd(onUpRelease)}
-                    className="cursor-pointer hover:opacity-95 active:scale-95"
-                    src={upArrow}
-                    width={50}
-                />
+                >
+                    <img
+    
+                        className="cursor-pointer hover:opacity-95 active:scale-95 select-none pointer-events-none"
+                        src={upArrow}
+                        width={50}
+                    />
+                </Button>
             </div>
             <div className="flex flex-1">
                 <div className="flex justify-center items-center">
-                    <img
-                        onMouseDown={() => handlePressStart(onLeftPress)}
+                    <Button
+                        onTouchStart={(e) => handlePressStart(e, onLeftPress)}
+                        onMouseDown={(e) => handlePressStart(e, onLeftPress)}
                         onMouseUp={() => handlePressEnd(onLeftRelease)}
                         onMouseLeave={() => handlePressEnd(onLeftRelease)}
-                        className="cursor-pointer hover:opacity-95 active:scale-95"
-                        src={leftArrow}
-                        width={50}
-                    />
+                        onTouchEnd={() => handlePressEnd(onLeftRelease)}
+
+                    >
+                        <img
+       
+                            className="cursor-pointer hover:opacity-95 active:scale-95 select-none pointer-events-none"
+                            src={leftArrow}
+                            width={50}
+                        />
+                    </Button>
                 </div>
                 <div className="flex flex-1 justify-center items-center">
                     <div
@@ -83,25 +99,37 @@ const StRemoteArrows = ({
                     </div>
                 </div>
                 <div className="flex justify-center items-center">
-                    <img
-                        onMouseDown={() => handlePressStart(onRightPress)}
+                    <Button
+                        onTouchStart={(e) => handlePressStart(e, onRightPress)}
+                        onMouseDown={(e) => handlePressStart(e, onRightPress)}
+                        onTouchEnd={() => handlePressEnd(onRightRelease)}
                         onMouseUp={() => handlePressEnd(onRightRelease)}
                         onMouseLeave={() => handlePressEnd(onRightRelease)}
-                        className="cursor-pointer hover:opacity-95 active:scale-95"
-                        src={rightArrow}
-                        width={50}
-                    />
+                    >
+                        <img
+     
+                            className="cursor-pointer hover:opacity-95 active:scale-95 select-none pointer-events-none"
+                            src={rightArrow}
+                            width={50}
+                        />
+                    </Button>
                 </div>
             </div>
             <div className="flex flex-1 justify-center items-end">
-                <img
-                    onMouseDown={() => handlePressStart(onDownPress)}
+                <Button
+                    onTouchStart={(e) => handlePressStart(e, onDownPress)}
+                    onMouseDown={(e) => handlePressStart(e, onDownPress)}
                     onMouseUp={() => handlePressEnd(onDownRelease)}
+                    onTouchEnd={() => handlePressEnd(onDownRelease)}
                     onMouseLeave={() => handlePressEnd(onDownRelease)}
-                    className="cursor-pointer hover:opacity-95 active:scale-95"
-                    src={downArrow}
-                    width={50}
-                />
+                >
+                    <img
+
+                        className="cursor-pointer hover:opacity-95 active:scale-95 pointer-events-none select-none"
+                        src={downArrow}
+                        width={50}
+                    />
+                </Button>
             </div>
         </div>
     );
