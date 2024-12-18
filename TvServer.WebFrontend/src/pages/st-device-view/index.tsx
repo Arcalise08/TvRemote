@@ -11,10 +11,10 @@ import {toast} from "react-toastify";
 import AppLaunchCards from "./app-launch-cards.tsx";
 import VolumeControl from "./volume-control.tsx";
 import InputSelector from "./input-selector.tsx";
-import RemoteArrows from "../../components/remote-arrows.tsx";
-import {STRemoteButtonValues} from "../../models/smart-thing-types.ts";
+import {STRemoteButtonKeyStates, STRemoteButtonValues} from "../../models/smart-thing-types.ts";
 import useCecDeviceStore from "../../stores/useCecDeviceStore.ts";
 import {CecTVDeviceId} from "../../apis/cec-api.ts";
+import StRemoteArrows from "./st-remote-arrows.tsx";
 
 const STDeviceView = () => {
     const [loading, setLoading] = useState(false);
@@ -91,10 +91,9 @@ const STDeviceView = () => {
             toast.error(result.error ?? "Failed to turn TV on");
         }
     }
-
-    const sendPress = async (press : STRemoteButtonValues) => {
+    const sendPress = async (button : STRemoteButtonValues, pressType: STRemoteButtonKeyStates ) => {
         if (!selectedSTDevice) return;
-        await sendSTRemotePress(selectedSTDevice, press);
+        await sendSTRemotePress(selectedSTDevice, {Button : button,  Type: pressType});
     }
 
     if (notFound)
@@ -125,7 +124,7 @@ const STDeviceView = () => {
 
 
     return (
-        <div className={"flex flex-1 h-screen w-full bg-slate-100 relative overflow-hidden"}>
+        <div className={"flex flex-1 h-screen w-full bg-slate-100 relative overflow-hidden select-none"}>
             <div className="flex flex-col h-full w-full overflow-auto">
                 <div className={"flex-1 flex items-center justify-center"}>
                     <div className={"bg-white shadow rounded p-2"}>
@@ -146,12 +145,16 @@ const STDeviceView = () => {
                                 </StyledButton>
                             </div>
                             <div className={"flex justify-center"}>
-                                <RemoteArrows
-                                    onUpClick={() => sendPress(STRemoteButtonValues.Up)}
-                                    onDownClick={() => sendPress(STRemoteButtonValues.Down)}
-                                    onRightClick={() => sendPress(STRemoteButtonValues.Right)}
-                                    onLeftClick={() => sendPress(STRemoteButtonValues.Left)}
-                                    onOkClick={() => sendPress(STRemoteButtonValues.Ok)}
+                                <StRemoteArrows
+                                    onUpPress={() => sendPress(STRemoteButtonValues.Up, STRemoteButtonKeyStates.Pressed)}
+                                    onUpRelease={() => sendPress(STRemoteButtonValues.Up, STRemoteButtonKeyStates.Released)}
+                                    onDownPress={() => sendPress(STRemoteButtonValues.Down, STRemoteButtonKeyStates.Pressed)}
+                                    onDownRelease={() => sendPress(STRemoteButtonValues.Down, STRemoteButtonKeyStates.Released)}
+                                    onRightPress={() => sendPress(STRemoteButtonValues.Right, STRemoteButtonKeyStates.Pressed)}
+                                    onRightRelease={() => sendPress(STRemoteButtonValues.Right, STRemoteButtonKeyStates.Released)}
+                                    onLeftPress={() => sendPress(STRemoteButtonValues.Left, STRemoteButtonKeyStates.Pressed)}
+                                    onLeftRelease={() => sendPress(STRemoteButtonValues.Left, STRemoteButtonKeyStates.Released)}
+                                    onOkClick={() => sendPress(STRemoteButtonValues.Ok, STRemoteButtonKeyStates.Press_And_Released)}
                                  />
                             </div>
                             <div className={"flex justify-around"}>
@@ -160,15 +163,15 @@ const STDeviceView = () => {
                                     className={"cursor-pointer hover:opacity-95 active:scale-95"}
                                     src={MuteButton} width={50} height={50}/>
                                 <img
-                                    onClick={() => sendPress(STRemoteButtonValues.Exit)}
+                                    onClick={() => sendPress(STRemoteButtonValues.Exit, STRemoteButtonKeyStates.Press_And_Released)}
                                     className={"cursor-pointer hover:opacity-95 active:scale-95"}
                                     src={ExitButton} width={60} height={60}/>
                                 <img
-                                    onClick={() => sendPress(STRemoteButtonValues.Home)}
+                                    onClick={() => sendPress(STRemoteButtonValues.Home, STRemoteButtonKeyStates.Press_And_Released)}
                                     className={"cursor-pointer hover:opacity-95 active:scale-95"}
                                     src={HomeButton} width={50} height={50}/>
                                 <img
-                                    onClick={() => sendPress(STRemoteButtonValues.Back)}
+                                    onClick={() => sendPress(STRemoteButtonValues.Back, STRemoteButtonKeyStates.Press_And_Released)}
                                     className={"cursor-pointer hover:opacity-95 active:scale-95"}
                                     src={BackButton} width={50} height={50}/>
                             </div>

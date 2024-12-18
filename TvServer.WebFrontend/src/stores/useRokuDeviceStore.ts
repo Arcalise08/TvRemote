@@ -5,13 +5,14 @@ import useTokenStore from "./useTokenStore";
 import {HOME_SERVER_BASE_URL} from "../constants.ts";
 import {RokuApi} from "../apis/roku-api.ts";
 import {ProcessedRokuApp, RokuDevice, RokuKeypress} from "../models/roku-types.ts";
-import {BasicResult} from "../models/global-types.ts";
+import {BasicResult, Result} from "../models/global-types.ts";
 import {displayAppIcon} from "../utility.ts";
 
 
 export interface RokuDeviceStore {
     rokuDevices: RokuDevice[];
     loadRokuDevices: () => Promise<BasicResult>;
+    loadRokuDeviceApps: (ip : string) => Promise<Result<ProcessedRokuApp[]>>
     sendKeyPress: (rokuDevice : RokuDevice, keypress : RokuKeypress, addData: string | null) => Promise<boolean>;
 }
 
@@ -45,18 +46,8 @@ const useRokuDeviceStore = create<RokuDeviceStore>()(
                         const infos = [] as RokuDevice[]
                         for (const ip of devices) {
                             const details = await api.getDeviceInfo(ip);
-                            const apps = await api.getInstalledApps(ip);
-                            const processed = [] as ProcessedRokuApp[];
-                            if (apps?.appList) {
-                                for (const app of apps.appList) {
-                                    const blob = await api.getRokuAppIcon(ip, app.id)
-                                    const url = await displayAppIcon(blob);
-                                    processed.push({rokuApp: app, imgUrl: url});
-                                }
-                            }
-
                             if (!details) continue;
-                            infos.push({details, ip, apps: processed});
+                            infos.push({details, ip});
                         }
                         set((draft) => {
                             draft.rokuDevices = infos;
@@ -65,6 +56,24 @@ const useRokuDeviceStore = create<RokuDeviceStore>()(
                             isSuccessful: true,
                             error: null
                         } as BasicResult
+                    },
+                    loadRokuDeviceApps: async (ip : string) => {
+                        const api = initializeRokuClient();
+                        if (!api)
+                            return {
+                                isSuccessful: false,
+                                error: "Unable to initialize Roku client."
+                            } as Result<ProcessedRokuApp[]>
+                        const apps = await api.getInstalledApps(ip);
+                        const processed = [] as ProcessedRokuApp[];
+                        if (apps?.appList) {
+                            for (const app of apps.appList) {
+                                const blob = await api.getRokuAppIcon(ip, app.id)
+                                const url = await displayAppIcon(blob);
+                                processed.push({rokuApp: app, imgUrl: url});
+                            }
+                        }  
+                        return { isSuccessful:true, data: processed } as Result<ProcessedRokuApp[]>;
                     },
                     sendKeyPress: async (rokuDevice : RokuDevice, keyPress : RokuKeypress, addData: string | null) => {
                         const api = initializeRokuClient();

@@ -2,16 +2,18 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Xml.Serialization;
+using Makaretu.Dns;
 using TvServer.Models;
 
 namespace TvServer.Services;
 
 public class RokuService(IHttpClientFactory httpClientFactory)
 {
-    private const string SSDP_ADDRESS = "239.255.255.250";
-    private const int SSDP_PORT = 1900;
+    private const string SsdpAddress = "239.255.255.250";
+    private const int SsdpPort = 1900;
     public List<string> DiscoverRokuDevices()
     {
+
         List<string> deviceLocations = new();
         string ssdpRequest = 
             "M-SEARCH * HTTP/1.1\r\n" +
@@ -20,37 +22,37 @@ public class RokuService(IHttpClientFactory httpClientFactory)
             "MX: 3\r\n" +
             "ST: roku:ecp\r\n\r\n";
 
-        using (UdpClient client = new UdpClient())
+
+        using UdpClient client = new UdpClient();
+        client.EnableBroadcast = true;
+        IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 0);
+        client.Client.Bind(localEndPoint);
+
+        byte[] requestBytes = Encoding.UTF8.GetBytes(ssdpRequest);
+        IPEndPoint ssdpEndPoint = new IPEndPoint(IPAddress.Parse(SsdpAddress), SsdpPort);
+        client.Send(requestBytes, requestBytes.Length, ssdpEndPoint);
+
+        var timeout = DateTime.Now.AddSeconds(5);
+        while (DateTime.Now < timeout)
         {
-            client.EnableBroadcast = true;
-            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            client.Client.Bind(localEndPoint);
-
-            byte[] requestBytes = Encoding.UTF8.GetBytes(ssdpRequest);
-            IPEndPoint ssdpEndPoint = new IPEndPoint(IPAddress.Parse(SSDP_ADDRESS), SSDP_PORT);
-            client.Send(requestBytes, requestBytes.Length, ssdpEndPoint);
-
-            var timeout = DateTime.Now.AddSeconds(5);
-            while (DateTime.Now < timeout)
+            if (client.Available > 0)
             {
-                if (client.Available > 0)
-                {
-                    IPEndPoint remoteEndPoint = null;
-                    byte[] responseBytes = client.Receive(ref remoteEndPoint);
-                    string response = Encoding.UTF8.GetString(responseBytes);
+                IPEndPoint remoteEndPoint = null;
+                byte[] responseBytes = client.Receive(ref remoteEndPoint);
+                string response = Encoding.UTF8.GetString(responseBytes);
 
-                    if (response.Contains("LOCATION:"))
+                if (response.Contains("LOCATION:"))
+                {
+                    var locationLine = response.Split("\r\n")
+                        .FirstOrDefault(line => line.StartsWith("LOCATION:", StringComparison.OrdinalIgnoreCase));
+                    if (locationLine != null)
                     {
-                        var locationLine = response.Split("\r\n")
-                            .FirstOrDefault(line => line.StartsWith("LOCATION:", StringComparison.OrdinalIgnoreCase));
-                        if (locationLine != null)
-                        {
-                            string location = locationLine.Split(":", 2)[1].Trim();
-                            deviceLocations.Add(location);
-                        }
+                        string location = locationLine.Split(":", 2)[1].Trim();
+                        deviceLocations.Add(location);
                     }
                 }
             }
+            
         }
 
         return deviceLocations;

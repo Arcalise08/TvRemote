@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Makaretu.Dns;
 using Microsoft.AspNetCore.Mvc;
 using TvServer.Models;
 using TvServer.Services;
@@ -94,7 +95,6 @@ app.MapGet("/api/turn-tv-on", async (CancellationToken ct) =>
 });
 app.MapGet("/api/roku/devices", async ([FromServices]RokuService service, CancellationToken ct) =>
 {
-
     var devices = service.DiscoverRokuDevices();
     return Results.Ok(devices);
 });

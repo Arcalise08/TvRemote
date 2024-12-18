@@ -39,7 +39,6 @@ export enum RokuKeypress {
 export type RokuDevice = {
     ip: string;
     details: RokuDeviceInfo;
-    apps: ProcessedRokuApp[];
 }
 
 export type ProcessedRokuApp = {

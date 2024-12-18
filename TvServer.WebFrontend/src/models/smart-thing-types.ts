@@ -64,6 +64,12 @@ export type SmartThingsDevice = {
     label: string;
     locationId: string;
 }
+
+export type STRemoteButtonCommand = { 
+    Button: STRemoteButtonValues;
+    Type: STRemoteButtonKeyStates;
+    
+}
 export enum STRemoteButtonValues {
     Up = "UP",
     Down = "DOWN",

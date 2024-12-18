@@ -1,7 +1,7 @@
 export const ST_BASE_URL = "https://api.smartthings.com/v1";
 
-export const HOME_SERVER_BASE_URL = `${window.location.origin}`;
-//export const HOME_SERVER_BASE_URL = `http://raspberrypi.local:1123`;
+//export const HOME_SERVER_BASE_URL = `${window.location.origin}`;
+export const HOME_SERVER_BASE_URL = `http://raspberrypi.local:1123`;
 
 
 export const AsyncTimeout = (duration : number) => new Promise(resolve => setTimeout(resolve, duration));

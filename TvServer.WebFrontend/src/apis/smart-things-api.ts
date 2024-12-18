@@ -2,10 +2,11 @@ import {
     GetSmartThingsDevicesResponse,
     SmartThingDeviceStatus,
     SmartThingRequestFailed,
-    SmartThingsCommandResponse, STRemoteButtonKeyStates, STRemoteButtonValues, STTvCommand
+    SmartThingsCommandResponse,
+    STRemoteButtonCommand,
+    STTvCommand
 } from "../models/smart-thing-types.ts";
 import {Result} from "../models/global-types.ts";
-
 
 
 export class SmartThingsApi {
@@ -133,11 +134,11 @@ export class SmartThingsApi {
         return await this.sendTvCommand(deviceId, [tvCommand])
     }
 
-    async sendRemotePress(deviceId : string, presses : STRemoteButtonValues[]) {
+    async sendRemotePress(deviceId : string, presses : STRemoteButtonCommand[]) {
         const commands = [];
         for (const command of presses) {
-            commands.push(command)
-            commands.push(STRemoteButtonKeyStates.Press_And_Released)
+            commands.push(command.Button)
+            commands.push(command.Type)
         }
 
         const tvCommand : STTvCommand = {

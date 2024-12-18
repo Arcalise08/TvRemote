@@ -8,37 +8,43 @@ import MuteButton from "../../assets/volume-mute.svg"
 import ExitButton from "../../assets/exit.svg"
 import {toast} from "react-toastify";
 import AppLaunchCards from "./app-launch-cards.tsx";
-import RemoteArrows from "../../components/remote-arrows.tsx";
 import useRokuDeviceStore from "../../stores/useRokuDeviceStore.ts";
-import {RokuApp, RokuDevice, RokuKeypress} from "../../models/roku-types.ts";
+import {ProcessedRokuApp, RokuApp, RokuDevice, RokuKeypress} from "../../models/roku-types.ts";
 import VolumeControl from "./volume-control.tsx";
+import RokuRemoteArrows from "./roku-remote-arrows.tsx";
 
 const RokuDeviceView = () => {
     const [loading, setLoading] = useState(false);
+    const [appsloading, setAppsloading] = useState(false);
     const [notFound, setNotFound] = useState(false);
-
+    
     const params = useParams<string>();
     const navigate = useNavigate();
     const [selectedRokuDevice, setSelectedRokuDevice] = useState<RokuDevice | null>(null);
-
+    const [rokuApps, setRokuApps] = useState<ProcessedRokuApp[]>([]);
     const {
         rokuDevices,
-        sendKeyPress
+        sendKeyPress,
+        loadRokuDeviceApps
     } = useRokuDeviceStore();
 
     useEffect(() => {
         findDevice()
     }, []);
 
-    const findDevice = () => {
+    const findDevice = async () => {
         const device = rokuDevices.find(x => x.details.deviceId == params.deviceId)
         if (!device) {
             setNotFound(true);
             return;
         }
         setSelectedRokuDevice(device);
+        setAppsloading(true);
+        const apps = await loadRokuDeviceApps(device.ip);
+        if (apps.isSuccessful && apps.data && apps.data.length > 0) 
+            setRokuApps(apps.data);
+        setAppsloading(false);
     }
-
 
     const changeTvPower = async (turnOn: boolean) => {
         setLoading(true);
@@ -105,18 +111,18 @@ const RokuDeviceView = () => {
                     <div className={"flex flex-col m-5"}>
                         <div className={"flex justify-center"}>
                             <StyledButton
-                                onClick={() => changeTvPower(true) }
+                                onClick={() => changeTvPower(true)}
                                 className={"h-10 mx-2 bg-green-500"}>
                                 Turn On
                             </StyledButton>
                             <StyledButton
-                                onClick={() => changeTvPower(false) }
+                                onClick={() => changeTvPower(false)}
                                 className={"h-10 mx-2 bg-red-500"}>
                                 Turn Off
                             </StyledButton>
                         </div>
                         <div className={"flex justify-center"}>
-                            <RemoteArrows
+                            <RokuRemoteArrows
                                 onUpClick={() => sendPress(RokuKeypress.Up)}
                                 onDownClick={() => sendPress(RokuKeypress.Down)}
                                 onRightClick={() => sendPress(RokuKeypress.Right)}
@@ -146,10 +152,21 @@ const RokuDeviceView = () => {
                             incrementVolume={() => sendPress(RokuKeypress.VolumeUp)}
                             decrementVolume={() => sendPress(RokuKeypress.VolumeDown)}
                         />
-                        <AppLaunchCards
-                            rokuApps={selectedRokuDevice.apps ?? []}
-                            onClick={(app) => launchApp(app)}
-                        />
+                        {
+                            appsloading ?
+                                (
+                                    <div className="flex items-center justify-center min-h-screen w-full">
+                                        <Loading/>
+                                    </div>
+                                )
+                                :
+                                (
+                                    <AppLaunchCards
+                                        rokuApps={rokuApps}
+                                        onClick={(app) => launchApp(app)}
+                                    />
+                                )
+                        }
                     </div>
                     <div className={"bg-gray-100 border p-2 rounded"}>
                         <StyledButton onClick={() => navigate("/devices")}>

@@ -12,6 +12,7 @@ const AppLaunchCards = ({onClick} : AppLaunchCardProps) => {
             <img onClick={() => onClick(KnownSTApiIds.Hulu)} className={"cursor-pointer hover:opacity-90 active:scale-95"} src={"/images/hulu.jpeg"} width={200} height={150}/>
             <img onClick={() => onClick(KnownSTApiIds.Netflix)} className={"cursor-pointer hover:opacity-90 active:scale-95"} src={"/images/netflix.jpg"} width={200} height={150}/>
             <img onClick={() => onClick(KnownSTApiIds.Plex)} className={"cursor-pointer hover:opacity-90 active:scale-95"} src={"/images/plex.webp"} width={200} height={150}/>
+            <img onClick={() => onClick(KnownSTApiIds.Youtube)} className={"cursor-pointer hover:opacity-90 active:scale-95"} src={"/images/youtube.png"} width={200} height={150}/>
         </div>
     );
 };
