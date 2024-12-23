@@ -8,7 +8,7 @@ import MuteButton from "../../assets/volume-mute.svg"
 import ExitButton from "../../assets/exit.svg"
 import {toast} from "react-toastify";
 import AppLaunchCards from "./app-launch-cards.tsx";
-import useRokuDeviceStore from "../../stores/useRokuDeviceStore.ts";
+import useRokuDeviceStore from "../../stores/useSamsungDeviceStore.ts";
 import {ProcessedRokuApp, RokuApp, RokuDevice, RokuKeypress} from "../../models/roku-types.ts";
 import VolumeControl from "./volume-control.tsx";
 import RokuRemoteArrows from "./roku-remote-arrows.tsx";

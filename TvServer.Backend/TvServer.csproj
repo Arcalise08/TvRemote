@@ -16,6 +16,8 @@
       <PackageReference Include="Makaretu.Dns.Multicast" Version="0.27.0" />
       <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="7.0.0" />
       <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="7.0.0" />
+      <PackageReference Include="System.Net.WebSockets" Version="4.3.0" />
+      <PackageReference Include="Websocket.Client" Version="5.1.2" />
     </ItemGroup>
 
     <ItemGroup>

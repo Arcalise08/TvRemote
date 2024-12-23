@@ -36,6 +36,7 @@ export enum RokuKeypress {
     Exit = "Exit"
 }
 
+
 export type RokuDevice = {
     ip: string;
     details: RokuDeviceInfo;

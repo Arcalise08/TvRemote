@@ -94,6 +94,7 @@ const STDeviceView = () => {
     }
     const sendPress = async (button : STRemoteButtonValues, pressType: STRemoteButtonKeyStates ) => {
         if (!selectedSTDevice) return;
+        console.log(`sending ${button} ${pressType}`);
         await sendSTRemotePress(selectedSTDevice, {Button : button,  Type: pressType});
     }
 
@@ -147,12 +148,16 @@ const STDeviceView = () => {
                             </div>
                             <div className={"flex justify-center"}>
                                 <StRemoteArrows
+                                    onUpClick={() => sendPress(STRemoteButtonValues.Up, STRemoteButtonKeyStates.Press_And_Released)}
                                     onUpPress={() => sendPress(STRemoteButtonValues.Up, STRemoteButtonKeyStates.Pressed)}
                                     onUpRelease={() => sendPress(STRemoteButtonValues.Up, STRemoteButtonKeyStates.Released)}
+                                    onDownClick={() => sendPress(STRemoteButtonValues.Down, STRemoteButtonKeyStates.Press_And_Released)}
                                     onDownPress={() => sendPress(STRemoteButtonValues.Down, STRemoteButtonKeyStates.Pressed)}
                                     onDownRelease={() => sendPress(STRemoteButtonValues.Down, STRemoteButtonKeyStates.Released)}
+                                    onRightClick={() => sendPress(STRemoteButtonValues.Right, STRemoteButtonKeyStates.Press_And_Released)}
                                     onRightPress={() => sendPress(STRemoteButtonValues.Right, STRemoteButtonKeyStates.Pressed)}
                                     onRightRelease={() => sendPress(STRemoteButtonValues.Right, STRemoteButtonKeyStates.Released)}
+                                    onLeftClick={() => sendPress(STRemoteButtonValues.Left, STRemoteButtonKeyStates.Press_And_Released)}
                                     onLeftPress={() => sendPress(STRemoteButtonValues.Left, STRemoteButtonKeyStates.Pressed)}
                                     onLeftRelease={() => sendPress(STRemoteButtonValues.Left, STRemoteButtonKeyStates.Released)}
                                     onOkClick={() => sendPress(STRemoteButtonValues.Ok, STRemoteButtonKeyStates.Press_And_Released)}

@@ -5,57 +5,95 @@ import rightArrow from "../../assets/right-arrow.svg"
 import * as React from "react";
 import {useRef} from "react";
 import PressableIcon from "../../components/pressable-icon.tsx";
+import {IsOnMobile} from "../../utility.ts";
 
 type RemoteArrowsProps = {
     onUpPress: () => void;
     onUpRelease: () => void;
+    onUpClick: () => void;
     onDownPress: () => void;
-    onDownRelease: () => void;
+    onDownRelease: () => void
+    onDownClick: () => void;
     onRightPress: () => void;
     onRightRelease: () => void;
+    onRightClick: () => void;
     onLeftPress: () => void;
     onLeftRelease: () => void;
+    onLeftClick: () => void;
     onOkClick: () => void;
 };
 
+enum ButtonNames {
+    left= "left",
+    right= "right",
+    up= "up",
+    down= "down",
+}
+
 const StRemoteArrows = ({
-                          onUpPress,
-                          onUpRelease,
-                          onDownPress,
-                          onDownRelease,
-                          onRightPress,
-                          onRightRelease,
-                          onLeftPress,
-                          onLeftRelease,
-                          onOkClick,
-                      }: RemoteArrowsProps) => {
+                            onUpPress,
+                            onUpRelease,
+                            onUpClick,
+                            onDownPress,
+                            onDownRelease,
+                            onDownClick,
+                            onRightPress,
+                            onRightRelease,
+                            onRightClick,
+                            onLeftPress,
+                            onLeftRelease,
+                            onLeftClick,
+                            onOkClick,
+                        }: RemoteArrowsProps) => {
     const intervalRef = useRef<number | null>(null);
-    
+    const pressingRef = useRef<ButtonNames | null>(null);
+    const isOnMobile = useRef(IsOnMobile());
     const vibrate = (duration: number) => {
         if (navigator.vibrate) {
             navigator.vibrate(duration);
         }
     };
-    const handlePressStart = (event: React.MouseEvent | React.TouchEvent,  onPress: () => void) => {
-        event.preventDefault();
+
+
+    const handleClick = (
+        btnName : ButtonNames,
+        onPress: () => void,
+        onLongPress: () => void,
+        onRelease : () => void
+    ) => {
+        console.log(`Pressing ${btnName}`)
+        
         onPress();
-        console.log("pressing")
-
-        intervalRef.current = setInterval(() => {
-            console.log("pressing")
-            vibrate(50)
-            onPress()
-        }, 500); 
-    };
-
-    // Handle press end
-    const handlePressEnd = (onRelease: () => void) => {
-    console.log("releasing")
-    if (intervalRef.current) {
+        if (intervalRef.current) {
             clearInterval(intervalRef.current);
-            intervalRef.current = null;
+            intervalRef.current = null
         }
-        onRelease();
+        pressingRef.current = btnName;
+        let longPressing = false;
+        intervalRef.current = setInterval(() => {
+            if (pressingRef.current && pressingRef.current === btnName)
+            {
+                longPressing = true;
+                console.log(`long pressing ${pressingRef.current}`);
+                onLongPress();
+                vibrate(100)
+            }
+            else {
+                if (longPressing) {
+                    console.log("clearing long press!")
+                    onRelease()
+                }
+                if (intervalRef.current) {
+                    clearInterval(intervalRef.current);
+                } 
+                intervalRef.current = null
+            }
+        }, 500)
+    };
+    
+    
+    const handlePressEnd = (btnName : ButtonNames) => {
+        pressingRef.current = null;
     };
 
     return (
@@ -63,22 +101,22 @@ const StRemoteArrows = ({
             <div className="flex flex-1 justify-center items-start">
                 <PressableIcon
                     src={upArrow}
-                    onTouchStart={(e) => handlePressStart(e, onUpPress)}
-                    onMouseDown={(e) => handlePressStart(e, onUpPress)}
-                    onMouseUp={() => handlePressEnd(onUpRelease)}
-                    onTouchEnd={() => handlePressEnd(onUpRelease)}
-                    onMouseLeave={() => handlePressEnd(onUpRelease)}
+                    onMouseDown={() =>  isOnMobile.current && handleClick(ButtonNames.up, onUpClick, onUpPress, onUpRelease)}
+                    onTouchStart={() =>!isOnMobile.current && handleClick(ButtonNames.up, onUpClick, onUpPress, onUpRelease)}
+                    onMouseUp={() => handlePressEnd(ButtonNames.up)}
+                    onTouchEnd={()=> handlePressEnd(ButtonNames.up)}
+                    onMouseLeave={()=> handlePressEnd(ButtonNames.up)}
                 />
             </div>
             <div className="flex flex-1">
                 <div className="flex justify-center items-center">
                     <PressableIcon
                         src={leftArrow}
-                        onTouchStart={(e) => handlePressStart(e, onLeftPress)}
-                        onMouseDown={(e) => handlePressStart(e, onLeftPress)}
-                        onMouseUp={() => handlePressEnd(onLeftRelease)}
-                        onMouseLeave={() => handlePressEnd(onLeftRelease)}
-                        onTouchEnd={() => handlePressEnd(onLeftRelease)}
+                        onTouchStart={() => isOnMobile.current && handleClick(ButtonNames.left, onLeftClick, onLeftPress, onLeftRelease)}
+                        onMouseDown={() => !isOnMobile.current && handleClick(ButtonNames.left, onLeftClick, onLeftPress, onLeftRelease)}
+                        onMouseUp={() => handlePressEnd(ButtonNames.left)}
+                        onTouchEnd={()=> handlePressEnd(ButtonNames.left)}
+                        onMouseLeave={()=> handlePressEnd(ButtonNames.left)}
                     />
                 </div>
                 <div className="flex flex-1 justify-center items-center">
@@ -92,22 +130,22 @@ const StRemoteArrows = ({
                 <div className="flex justify-center items-center">
                     <PressableIcon
                         src={rightArrow}
-                        onTouchStart={(e) => handlePressStart(e, onRightPress)}
-                        onMouseDown={(e) => handlePressStart(e, onRightPress)}
-                        onTouchEnd={() => handlePressEnd(onRightRelease)}
-                        onMouseUp={() => handlePressEnd(onRightRelease)}
-                        onMouseLeave={() => handlePressEnd(onRightRelease)}
+                        onTouchStart={() => isOnMobile.current && handleClick(ButtonNames.right, onRightClick, onRightPress, onRightRelease)}
+                        onMouseDown={() => !isOnMobile.current && handleClick(ButtonNames.right, onRightClick, onRightPress, onRightRelease)}
+                        onMouseUp={() => handlePressEnd(ButtonNames.right)}
+                        onTouchEnd={()=> handlePressEnd(ButtonNames.right)}
+                        onMouseLeave={()=> handlePressEnd(ButtonNames.right)}
                     />
                 </div>
             </div>
             <div className="flex flex-1 justify-center items-end">
-                <PressableIcon 
+                <PressableIcon
                     src={downArrow}
-                    onTouchStart={(e) => handlePressStart(e, onDownPress)}
-                    onMouseDown={(e) => handlePressStart(e, onDownPress)}
-                    onMouseUp={() => handlePressEnd(onDownRelease)}
-                    onTouchEnd={() => handlePressEnd(onDownRelease)}
-                    onMouseLeave={() => handlePressEnd(onDownRelease)}
+                    onTouchStart={() => isOnMobile.current && handleClick(ButtonNames.down, onDownClick, onDownPress, onDownRelease)}
+                    onMouseDown={() => !isOnMobile.current && handleClick(ButtonNames.down, onDownClick, onDownPress, onDownRelease)}
+                    onMouseUp={() => handlePressEnd(ButtonNames.down)}
+                    onTouchEnd={()=> handlePressEnd(ButtonNames.down)}
+                    onMouseLeave={()=> handlePressEnd(ButtonNames.down)}
                 />
             </div>
         </div>

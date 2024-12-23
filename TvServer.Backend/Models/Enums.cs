@@ -59,3 +59,45 @@ public enum RokuKeypress
     Options,
     Exit
 }
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum SamsungKeypress
+{
+    KEY_POWER,
+    KEY_HOME,
+    KEY_SOURCE,
+    KEY_GUIDE,
+    KEY_TOOLS,
+    KEY_INFO,
+    
+    KEY_UP,
+    KEY_DOWN,
+    KEY_LEFT,
+    KEY_RIGHT,
+    KEY_ENTER,
+    KEY_RETURN,
+    
+    KEY_CH_LIST,
+    
+    KEY_CHUP,
+    KEY_CHDOWN,
+    KEY_VOLUP,
+    KEY_VOLDOWN,
+    KEY_MUTE,
+    
+    KEY_EXIT,
+    
+    KEY_RED,
+    KEY_GREEN,
+    KEY_YELLOW,
+    KEY_BLUE,
+    KEY_FACTORY
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum SamsungKeypressType
+{
+    Click,
+    Press,
+    Release
+}

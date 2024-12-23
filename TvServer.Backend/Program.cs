@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Makaretu.Dns;
 using Microsoft.AspNetCore.Mvc;
 using TvServer.Models;
+using TvServer.Routes;
 using TvServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,8 +41,14 @@ builder.Services.AddCors(defaultPolicy => defaultPolicy.AddDefaultPolicy(
         .AllowAnyHeader()
     ));
 builder.Services.AddHttpClient();
-
+builder.Services.AddHttpClient("no-ssl")
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = (m, c, ch, e) => true
+    });
 builder.Services.AddSingleton<RokuService>();
+builder.Services.AddSingleton<SamsungDirectService>();
+builder.Services.AddSingleton(await Settings.LoadSettings());
 var app = builder.Build();
 
 var requiredApiKey = builder.Configuration.GetValue<string>("ApiKey");
@@ -72,65 +79,10 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.MapGet("/api/turn-tv-on", async (CancellationToken ct) =>
-{
+app.MapCecRoutes();
+app.MapSamsungRoutes();
+app.MapRokuRoutes();
 
-    var p = new ProcessStartInfo()
-    {
-        FileName = "/bin/bash",
-        Arguments = $"-c \"echo 'on 0.0.0.0' | cec-client -s -d 1\"",
-        RedirectStandardOutput = true,
-        RedirectStandardError = true,
-        UseShellExecute = false,
-        CreateNoWindow = true
-    };
-    var proc = Process.Start(p);
-
-    if (proc is null)
-        return Results.Problem("Failed to turn TV on");
-    await proc.WaitForExitAsync(ct);
-    var errorStr = proc.StandardError.ReadToEnd();
-    var outputStr = proc.StandardOutput.ReadToEnd();
-    return Results.Ok(outputStr + "\n" + errorStr);
-});
-app.MapGet("/api/roku/devices", async ([FromServices]RokuService service, CancellationToken ct) =>
-{
-    var devices = service.DiscoverRokuDevices();
-    return Results.Ok(devices);
-});
-
-app.MapPost("/api/roku/devices", async (RokuDeviceRequest req, [FromServices]RokuService service,  CancellationToken ct) =>
-{
-    var info = await service.GetDeviceInfo(req.Ip);
-    return Results.Ok(info);
-});
-
-app.MapPost("/api/roku/devices/apps", async (RokuDeviceRequest req, [FromServices]RokuService service,  CancellationToken ct) =>
-{
-    var info = await service.GetInstalledApps(req.Ip);
-    return Results.Ok(info);
-});
-
-app.MapPost("/api/roku/devices/keyPress", async (RokuKeypressRequest req, [FromServices]RokuService service,  CancellationToken ct) =>
-{
-    var info = await service.SendKeyPress(req.Ip, req.Keypress, req.additionalData);
-    return Results.Ok(info);
-});
-
-app.MapPost("/api/roku/devices/apps/icon", async (RokuIconRequest req, [FromServices] RokuService service, CancellationToken ct) =>
-{
-    if (string.IsNullOrWhiteSpace(req.Ip))
-        return Results.BadRequest("Roku device IP is required.");
-    try
-    {
-        var iconBytes = await service.GetAppIconAsync(req.Ip, req.AppId);
-        return Results.File(iconBytes, "image/png");
-    }
-    catch (HttpRequestException ex)
-    {
-        return Results.Problem(ex.Message, statusCode: 500);
-    }
-});
 app.UseStaticFiles();
 app.UseRouting();
 app.MapFallbackToFile("index.html");
