@@ -8,11 +8,11 @@ import MuteButton from "../../assets/volume-mute.svg"
 import ExitButton from "../../assets/exit.svg"
 import {toast} from "react-toastify";
 import AppLaunchCards from "./app-launch-cards.tsx";
-import useRokuDeviceStore from "../../stores/useSamsungDeviceStore.ts";
 import {ProcessedRokuApp, RokuApp, RokuDevice, RokuKeypress} from "../../models/roku-types.ts";
 import VolumeControl from "./volume-control.tsx";
 import RokuRemoteArrows from "./roku-remote-arrows.tsx";
 import PressableIcon from "../../components/pressable-icon.tsx";
+import useRokuDeviceStore from "../../stores/useRokuDeviceStore.ts";
 
 const RokuDeviceView = () => {
     const [loading, setLoading] = useState(false);
@@ -128,7 +128,7 @@ const RokuDeviceView = () => {
                                 onDownClick={() => sendPress(RokuKeypress.Down)}
                                 onRightClick={() => sendPress(RokuKeypress.Right)}
                                 onLeftClick={() => sendPress(RokuKeypress.Left)}
-                                onOkClick={() => sendPress(RokuKeypress.Enter)}
+                                onOkClick={() => sendPress(RokuKeypress.Select)}
                             />
                         </div>
                         <div className={"flex justify-around"}>
