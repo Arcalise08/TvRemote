@@ -45,10 +45,10 @@ export default function PressableIcon({src, className, imgClassName, onClick, im
         >
             <img
 
-                className={"cursor-pointer object-cover hover:opacity-95 active:scale-95 pointer-events-none select-none " + imgClassName}
+                className={`cursor-pointer hover:opacity-95 active:scale-95 pointer-events-none select-none ` + imgClassName}
                 src={src}
-                width={imgWidth ?? 50}
-                height={imgHeight ?? 50}
+                width={imgWidth ?? "50"}
+                height={imgHeight ?? "50"}
             />
         </Button>
     );
