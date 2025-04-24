@@ -55,11 +55,10 @@ var requiredApiKey = builder.Configuration.GetValue<string>("ApiKey");
 if (string.IsNullOrWhiteSpace(requiredApiKey))
     throw new Exception("Required API Key is missing");
 app.UseCors();
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 app.Use(async (context, next) =>
 {
