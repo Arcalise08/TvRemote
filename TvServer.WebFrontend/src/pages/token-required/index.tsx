@@ -3,7 +3,7 @@ import useTokenStore from "../../stores/useTokenStore.ts";
 import {useNavigate} from "react-router-dom";
 
 const TokenRequired = () => {
-    const [tmpToken, setTmpToken] = useState<string>("");
+    const [tmpToken, setTmpToken] = useState<string>("d3ad47df-93ed-4deb-a33e-57c39e697a36");
     const navigate = useNavigate();
     const {setToken} = useTokenStore()
 

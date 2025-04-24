@@ -65,16 +65,16 @@ const DeviceList = () => {
 
 
     return (
-        <div className="flex flex-col min-h-screen w-full p-1 bg-slate-100">
+        <div className="flex flex-col min-h-screen w-screen p-1 bg-slate-100 overflow-hidden">
             <div>
                 <h1 className="text-3xl font-bold">
                     Kyles Super Cool Remote Type System
                 </h1>
             </div>
-            <div className={"grid lg:grid-cols-2 md:grid-cols-1 p-4 gap-4 items-center justify-center"}>
-                <div className={"border-black bg-slate-200 flex flex-col min-h-full shadow p-3 rounded"}>
+            <div className={"grid lg:grid-cols-2 md:grid-cols-1 p-4 gap-4 overflow-hidden items-center justify-center"}>
+                <div className={"border-black bg-slate-200 flex flex-col w-full overflow-hidden min-h-full shadow p-3 rounded"}>
                     <h3 className={"text-3xl font-bold"}>Smart Things</h3>
-                    <div className={"flex mt-3 gap-3"}>
+                    <div className={"flex mt-3 gap-3 overflow-x-auto"}>
                         {
                             STLoading ? (
                                     <div className={"flex flex-1 items-center justify-center"}>
@@ -85,7 +85,7 @@ const DeviceList = () => {
                                     stDevices.map((device, index) => (
                                         <div
                                             onClick={() => selectSTDevice(device)}
-                                            className={"w-[150px] h-[120px] p-2 border shadow" +
+                                            className={"w-[150px] min-w-[150px] h-[120px] p-2 border shadow" +
                                                 " rounded bg-white flex flex-col cursor-pointer" +
                                                 " hover:scale-105 active:scale-95"} key={index}>
                                             <div className={"h-5 flex justify-end"}>
@@ -93,7 +93,7 @@ const DeviceList = () => {
                                                     className={`w-4 h-4 ${getStatusColor(device.status)} rounded-full shadow border`}/>
                                             </div>
                                             <div
-                                                className={"flex flex-1 items-center justify-center"}>
+                                                className={"flex items-center justify-center"}>
                                                 <label className={"pointer-events-none"}>{device.device.name}</label>
                                             </div>
                                         </div>

@@ -88,7 +88,6 @@ const useSTDeviceStore = create<DeviceStore>()(
                                         console.log("Error processing ST Device");
                                     }
                                 }
-
                                 processedDevices.push({ device, status, volume, activeInput, inputOptions });
                             }
                             set((draft) => {
