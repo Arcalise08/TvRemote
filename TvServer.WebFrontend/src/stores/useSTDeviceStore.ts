@@ -74,14 +74,19 @@ const useSTDeviceStore = create<DeviceStore>()(
                                 let activeInput: string | null = null;
                                 let inputOptions: SmartThingsInputMap[] = []
                                 if (statusResult.isSuccessful && statusResult.data) {
-                                    status =
-                                        statusResult.data.components.main.switch.switch.value === "on";
-                                    volume =
-                                        statusResult.data.components.main.audioVolume.volume.value;
-                                    activeInput =
-                                        statusResult.data.components.main["samsungvd.mediaInputSource"].inputSource.value;
-                                    inputOptions =
-                                        statusResult.data.components.main["samsungvd.mediaInputSource"].supportedInputSourcesMap.value;
+                                    try {
+                                        status =
+                                            statusResult.data.components.main.switch.switch.value === "on";
+                                        volume =
+                                            statusResult.data.components.main.audioVolume.volume.value;
+                                        activeInput =
+                                            statusResult.data.components.main["samsungvd.mediaInputSource"].inputSource.value;
+                                        inputOptions =
+                                            statusResult.data.components.main["samsungvd.mediaInputSource"].supportedInputSourcesMap.value;
+                                    }
+                                    catch {
+                                        console.log("Error processing ST Device");
+                                    }
                                 }
 
                                 processedDevices.push({ device, status, volume, activeInput, inputOptions });
