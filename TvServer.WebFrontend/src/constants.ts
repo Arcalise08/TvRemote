@@ -14,6 +14,7 @@ export const KnownSTApiIds = {
     AmazonVideo:"3201512006785", //checked
     Max:"3201601007230",
     DisneyPlus:"3201901017640",//checked
-    Hulu:"3201601007625" //checked
+    Hulu:"3201601007625", //checked
+    Crunchyroll:"3202302030097"
 }
 

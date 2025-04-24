@@ -15,6 +15,12 @@ const AppLaunchCards = ({onClick} : AppLaunchCardProps) => {
                 imgHeight={150}
             />
             <PressableIcon
+                onClick={() => onClick(KnownSTApiIds.Crunchyroll)}
+                src={"/images/crunchyroll.png"}
+                imgWidth={200}
+                imgHeight={150}
+            />
+            <PressableIcon
                 onClick={() => onClick(KnownSTApiIds.DisneyPlus)}
                 src={"/images/disneyplus.webp"}
                 imgWidth={200}
