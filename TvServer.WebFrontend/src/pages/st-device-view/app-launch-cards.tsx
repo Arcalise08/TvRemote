@@ -50,6 +50,12 @@ const AppLaunchCards = ({onClick} : AppLaunchCardProps) => {
                 imgWidth={200}
                 imgHeight={150}
             />
+            <PressableIcon
+                onClick={() => onClick(KnownSTApiIds.Max)}
+                src={"/images/hbomax.webp"}
+                imgWidth={200}
+                imgHeight={150}
+            />
         </div>
     );
 };
