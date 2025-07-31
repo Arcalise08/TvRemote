@@ -8,6 +8,8 @@ import refreshIcon from "../../assets/refresh.svg"
 import useRokuDeviceStore from "../../stores/useRokuDeviceStore.ts";
 import useSamsungDeviceStore from "../../stores/useSamsungDeviceStore.ts";
 import {SamsungDevice} from "../../models/samsung-direct-types.ts";
+import {LockClosedIcon} from "@heroicons/react/16/solid";
+import useTokenStore from "../../stores/useTokenStore.ts";
 
 const DeviceList = () => {
     const [rokuLoading, setRokuLoading] = useState<boolean>(true);
@@ -17,6 +19,7 @@ const DeviceList = () => {
     const {stDevices, loadSTDevices} = useSTDeviceStore();
     const {rokuDevices, loadRokuDevices} = useRokuDeviceStore();
     const {samsungDevices, loadSamsungDevices} = useSamsungDeviceStore();
+    const {setToken} = useTokenStore();
     useEffect(() => {
         handleLoadSTDevices()
         handleLoadSamsungDevices()
@@ -63,13 +66,22 @@ const DeviceList = () => {
         return status ? "bg-green-500" : "bg-red-500";
     }
 
+    const onClickLogout = () => {
+        localStorage.clear();
+        setToken(null);
+        navigate("/token-required");
+    }
+
 
     return (
         <div className="flex flex-col min-h-screen w-screen p-1 bg-slate-100 overflow-hidden">
-            <div>
+            <div className={"flex w-full justify-between items center p-2"}>
                 <h1 className="text-3xl font-bold">
                     Kyles Super Cool Remote Type System
                 </h1>
+                <LockClosedIcon
+                    onClick={onClickLogout}
+                    width={35} className={"mr-4 cursor-pointer"}/>
             </div>
             <div className={"grid lg:grid-cols-2 md:grid-cols-1 p-4 gap-4 overflow-hidden items-center justify-center"}>
                 <div className={"border-black bg-slate-200 flex flex-col w-full overflow-hidden min-h-full shadow p-3 rounded"}>
