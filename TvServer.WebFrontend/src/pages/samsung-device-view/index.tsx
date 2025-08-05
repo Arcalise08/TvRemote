@@ -11,7 +11,9 @@ import VolumeControl from "./volume-control.tsx";
 import SamsungRemoteArrows from "./samsung-remote-arrows.tsx";
 import PressableIcon from "../../components/pressable-icon.tsx";
 import useSamsungDeviceStore from "../../stores/useSamsungDeviceStore.ts";
-import {SamsungDevice, SamsungKeypress, SamsungKeypressType} from "../../models/samsung-direct-types.ts";
+import {SamsungKeypress, SamsungKeypressType, SamsungTvDto} from "../../apis/TvControlClient.ts";
+import AppLaunchCards from "../st-device-view/app-launch-cards.tsx";
+import {PowerIcon} from "@heroicons/react/24/solid";
 
 const SamsungDeviceView = () => {
     const [loading, setLoading] = useState(false);
@@ -19,11 +21,11 @@ const SamsungDeviceView = () => {
     
     const params = useParams<string>();
     const navigate = useNavigate();
-    const [selectedSamsungDevice, setSelectedSamsungDevice] = useState<SamsungDevice | null>(null);
+    const [selectedSamsungDevice, setSelectedSamsungDevice] = useState<SamsungTvDto | null>(null);
     const {
         samsungDevices,
-        connectSamsungDevice,
-        sendKeyPress
+        sendKeyPress,
+        launchApp
     } = useSamsungDeviceStore();
 
     useEffect(() => {
@@ -33,17 +35,12 @@ const SamsungDeviceView = () => {
     const findDevice = async () => {
         setLoading(true);
 
-        const device = samsungDevices.find(x => x.device.id == params.deviceId)
+        const device = samsungDevices.find(x => x?.id == params.deviceId)
         if (!device) {
             setNotFound(true);
             return;
         }
         setSelectedSamsungDevice(device);
-        const result = await connectSamsungDevice(device.ip);
-        if (!result) {
-            toast.error("Failed to connect to TV! Kyle will not be happy about this...");
-            return;
-        }
         setLoading(false);
 
     }
@@ -59,16 +56,14 @@ const SamsungDeviceView = () => {
         setLoading(false);
     }
 
-/*    const launchApp = async (intention : RokuApp) => {
-        if (!selectedSamsungDevice) return;
-        const result = await sendKeyPress(selectedSamsungDevice, RokuKeypress.Launch, intention.id);
-        if (!result) {
-            toast.error("Failed to launch app");
-        }
-    }*/
+
+    const handleLaunchApp = async (appId : string) => {
+        if (!selectedSamsungDevice || !selectedSamsungDevice.id) return;
+        await launchApp(selectedSamsungDevice.id, appId);
+    }
 
     const sendPress = async (press : SamsungKeypress, type : SamsungKeypressType = SamsungKeypressType.Click) => {
-        if (!selectedSamsungDevice) return;
+        if (!selectedSamsungDevice || !selectedSamsungDevice.id) return;
         return await sendKeyPress(selectedSamsungDevice, press, type);
     }
     if (notFound)
@@ -103,15 +98,16 @@ const SamsungDeviceView = () => {
             <div className={"flex-1 flex items-center justify-center"}>
                 <div className={"bg-white shadow rounded p-2"}>
                     <div className={"h-50 text-center"}>
-                        <h1 className={"font-bold text-4xl"}>{selectedSamsungDevice.device.name}</h1>
+                        <h1 className={"font-bold text-4xl"}>{selectedSamsungDevice.deviceName}</h1>
                     </div>
                     <div className={"flex flex-col m-5"}>
                         <div className={"flex justify-center items-center"}>
-                            <StyledButton
-                                onClick={() => changeTvPower()}
-                                className={"h-10 mx-2 bg-green-500"}>
-                                Power
-                            </StyledButton>
+                            <PowerIcon
+                                className={"p-2 shadow border border-gray-400 rounded cursor-pointer active:scale-95 hover:opacity-90"}
+                                width={55}
+                                       height={55}
+                                       onClick={() => changeTvPower()}/>
+
                         </div>
                         <div className={"flex justify-center"}>
                             <SamsungRemoteArrows
@@ -151,6 +147,9 @@ const SamsungDeviceView = () => {
                         <VolumeControl
                             incrementVolume={() => sendPress(SamsungKeypress.KEY_VOLUP)}
                             decrementVolume={() => sendPress(SamsungKeypress.KEY_VOLDOWN)}
+                        />
+                        <AppLaunchCards
+                            onClick={(appId) => handleLaunchApp(appId)}
                         />
                     </div>
                     <div className={"bg-gray-100 border p-2 rounded"}>

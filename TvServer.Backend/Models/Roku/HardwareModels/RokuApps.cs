@@ -1,10 +1,11 @@
 using System.Xml.Serialization;
 
-namespace TvServer.Models;
+namespace TvServerV2.Models.Roku.HardwareModels;
 
 [XmlRoot("apps")]
 public class RokuApps
 {
+    public string Id { get; set; }
     [XmlElement("app")]
     public List<RokuApp> AppList { get; set; } = new();
 }

@@ -1,5 +1,6 @@
-import {ProcessedRokuApp, RokuApp} from "../../models/roku-types.ts";
+import {ProcessedRokuApp} from "../../models/roku-types.ts";
 import PressableIcon from "../../components/pressable-icon.tsx";
+import {RokuApp} from "../../apis/TvControlClient.ts";
 
 
 type AppLaunchCardProps = {
@@ -34,12 +35,13 @@ const AppLaunchCards = ({onClick, rokuApps} : AppLaunchCardProps) => {
             acc[favorite.name.toLowerCase()] = favorite.rating;
             return acc;
         }, {} as FavoriteRatings);
-        const filtered = rokuApps.filter(item => !hide.includes(item.rokuApp.name));
+        const filtered = rokuApps.filter(item => !hide.includes(item.rokuApp.name ?? "unknown"));
         const sorted = filtered.sort((a, b) => {
+            if (!a.rokuApp.name || !b.rokuApp.name) return 0;
             const aName = a.rokuApp.name.toLowerCase();
             const bName = b.rokuApp.name.toLowerCase();
-            const aIsTvInput = aName.includes("tvinput");
-            const bIsTvInput = bName.includes("tvinput");
+            const aIsTvInput = aName?.includes("tvinput");
+            const bIsTvInput = bName?.includes("tvinput");
             const aRating = favoriteRatings[aName] || 0;
             const bRating = favoriteRatings[bName] || 0;
 

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace TvServer.Models;
+namespace TvServerV2.Models;
 
 public class SamsungTvProfile
 {

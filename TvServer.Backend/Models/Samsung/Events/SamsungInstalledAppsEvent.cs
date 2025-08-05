@@ -1,9 +1,10 @@
-﻿namespace TvServer.Models.Samsung.Events;
+﻿namespace TvServerV2.Models.Samsung.Events;
 
 
 
-public class AppData
+public class SamsungAppData
 {
+    public string Id { get; set; }
     public string AppId { get; set; }
     public int AppType { get; set; }
     public string Icon { get; set; }
@@ -13,7 +14,7 @@ public class AppData
 
 public class DataContainer
 {
-    public List<AppData> Data { get; set; }
+    public List<SamsungAppData> Data { get; set; }
 }
 
 public class SamsungInstalledAppsEvent

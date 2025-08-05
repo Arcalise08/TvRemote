@@ -8,11 +8,12 @@ import MuteButton from "../../assets/volume-mute.svg"
 import ExitButton from "../../assets/exit.svg"
 import {toast} from "react-toastify";
 import AppLaunchCards from "./app-launch-cards.tsx";
-import {ProcessedRokuApp, RokuApp, RokuDevice, RokuKeypress} from "../../models/roku-types.ts";
+import {ProcessedRokuApp} from "../../models/roku-types.ts";
 import VolumeControl from "./volume-control.tsx";
 import RokuRemoteArrows from "./roku-remote-arrows.tsx";
 import PressableIcon from "../../components/pressable-icon.tsx";
 import useRokuDeviceStore from "../../stores/useRokuDeviceStore.ts";
+import {RokuApp, RokuKeypress, RokuTvDto} from "../../apis/TvControlClient.ts";
 
 const RokuDeviceView = () => {
     const [loading, setLoading] = useState(false);
@@ -21,7 +22,7 @@ const RokuDeviceView = () => {
     
     const params = useParams<string>();
     const navigate = useNavigate();
-    const [selectedRokuDevice, setSelectedRokuDevice] = useState<RokuDevice | null>(null);
+    const [selectedRokuDevice, setSelectedRokuDevice] = useState<RokuTvDto | null>(null);
     const [rokuApps, setRokuApps] = useState<ProcessedRokuApp[]>([]);
     const {
         rokuDevices,
@@ -34,14 +35,14 @@ const RokuDeviceView = () => {
     }, []);
 
     const findDevice = async () => {
-        const device = rokuDevices.find(x => x.details.deviceId == params.deviceId)
+        const device = rokuDevices.find(x => x.id == params.deviceId)
         if (!device) {
             setNotFound(true);
             return;
         }
         setSelectedRokuDevice(device);
         setAppsloading(true);
-        const apps = await loadRokuDeviceApps(device.ip);
+        const apps = await loadRokuDeviceApps(device.id);
         if (apps.isSuccessful && apps.data && apps.data.length > 0) 
             setRokuApps(apps.data);
         setAppsloading(false);
@@ -64,7 +65,7 @@ const RokuDeviceView = () => {
     }
 
     const launchApp = async (intention : RokuApp) => {
-        if (!selectedRokuDevice) return;
+        if (!selectedRokuDevice || !intention.id) return;
         const result = await sendKeyPress(selectedRokuDevice, RokuKeypress.Launch, intention.id);
         if (!result) {
             toast.error("Failed to launch app");
@@ -107,7 +108,7 @@ const RokuDeviceView = () => {
             <div className={"flex-1 flex items-center justify-center"}>
                 <div className={"bg-white shadow rounded p-2"}>
                     <div className={"h-50 text-center"}>
-                        <h1 className={"font-bold text-4xl"}>{selectedRokuDevice.details.friendlyDeviceName}</h1>
+                        <h1 className={"font-bold text-4xl"}>{selectedRokuDevice.deviceName}</h1>
                     </div>
                     <div className={"flex flex-col m-5"}>
                         <div className={"flex justify-center"}>

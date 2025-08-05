@@ -1,7 +1,7 @@
-namespace TvServer.Models.Roku.DTOs;
+namespace TvServerV2.Models.Roku;
 
 public record RokuKeypressRequest(
-    string Ip,
+    string DeviceId,
     RokuKeypress Keypress,
     string? additionalData
 );

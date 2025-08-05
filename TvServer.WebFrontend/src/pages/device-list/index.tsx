@@ -1,45 +1,35 @@
 import Loading from "../../loading.tsx";
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import useSTDeviceStore, {STDevice} from "../../stores/useSTDeviceStore.ts";
-import StyledButton from "../../components/styled-button.tsx";
-import {RokuDevice} from "../../models/roku-types.ts";
-import refreshIcon from "../../assets/refresh.svg"
 import useRokuDeviceStore from "../../stores/useRokuDeviceStore.ts";
 import useSamsungDeviceStore from "../../stores/useSamsungDeviceStore.ts";
-import {SamsungDevice} from "../../models/samsung-direct-types.ts";
-import {LockClosedIcon} from "@heroicons/react/16/solid";
 import useTokenStore from "../../stores/useTokenStore.ts";
+import {DeviceStatus, RokuTvDto, SamsungTvDto} from "../../apis/TvControlClient.ts";
+import {ArrowLeftStartOnRectangleIcon, ArrowPathIcon} from "@heroicons/react/24/solid";
+import useBasicDeviceStore from "../../stores/useBasicDeviceStore.ts";
+import StyledButton from "../../components/styled-button.tsx";
+import {setAsyncTimeout} from "../../utility.ts";
+import ListContainer from "./list-container.tsx";
 
 const DeviceList = () => {
     const [rokuLoading, setRokuLoading] = useState<boolean>(true);
-    const [STLoading, setSTLoading] = useState<boolean>(true);
     const [samsungLoading, setSamsungLoading] = useState<boolean>(true);
     const navigate = useNavigate();
-    const {stDevices, loadSTDevices} = useSTDeviceStore();
     const {rokuDevices, loadRokuDevices} = useRokuDeviceStore();
     const {samsungDevices, loadSamsungDevices} = useSamsungDeviceStore();
+    const {broadcastForDevices} = useBasicDeviceStore();
     const {setToken} = useTokenStore();
+
     useEffect(() => {
-        handleLoadSTDevices()
         handleLoadSamsungDevices()
-        handleLoadRokuDevices(false)
+        handleLoadRokuDevices()
     }, [])
 
-    const handleLoadRokuDevices = async (override : boolean) => {
-        if (rokuDevices.length && !override) {
-            setRokuLoading(false);
-            return;
-        };
+    const handleLoadRokuDevices = async () => {
         setRokuLoading(true);
         await loadRokuDevices()
         setRokuLoading(false);
 
-    }
-    const handleLoadSTDevices = async () => {
-        setSTLoading(true);
-        await loadSTDevices()
-        setSTLoading(false);
     }
 
     const handleLoadSamsungDevices = async () => {
@@ -48,167 +38,67 @@ const DeviceList = () => {
         setSamsungLoading(false);
     }
 
-    const selectSTDevice = (d : STDevice) => {
-        navigate(`/st-devices/${d.device.deviceId}`)
-    }
-
-    const selectRokuDevice = (d : RokuDevice) => {
-        navigate(`/roku-devices/${d.details.deviceId}`)
-    }
-
-    const selectSamsungDevice = (d : SamsungDevice) => {
-        navigate(`/samsung-devices/${d.device.id}`)
-    }
-
-    const getStatusColor = (status : boolean | null) => {
-        if (status === null)
-            return "bg-slate-500";
-        return status ? "bg-green-500" : "bg-red-500";
-    }
 
     const onClickLogout = () => {
+        const answer = window.confirm("Are you sure you want to logout?")
+        if (!answer) return;
         localStorage.clear();
         setToken(null);
         navigate("/token-required");
     }
 
+    const handleBroadcast = async () => {
+        const result = await broadcastForDevices();
+        if (!result.isSuccessful) {
+            alert("Failed to broadcast for devices: " + result.error);
+            return;
+        }
+        let counter = 0;
+        setRokuLoading(true);
+        setSamsungLoading(true);
+        while (counter < 10) {
+            await setAsyncTimeout(2500);
+            await loadRokuDevices();
+            await loadSamsungDevices();
+            if (rokuDevices.length > 0)
+                setRokuLoading(false);
+
+            if (samsungDevices.length > 0)
+                setSamsungLoading(false);
+            counter++;
+        }
+        setRokuLoading(false);
+        setSamsungLoading(false);
+    }
+
 
     return (
-        <div className="flex flex-col min-h-screen w-screen p-1 bg-slate-100 overflow-hidden">
+        <div className="flex flex-col min-h-screen w-screen p-1 bg-slate-100">
             <div className={"flex w-full justify-between items center p-2"}>
                 <h1 className="text-3xl font-bold">
-                    Kyles Super Cool Remote Type System
+                    Kyles Remote
                 </h1>
-                <LockClosedIcon
-                    onClick={onClickLogout}
-                    width={35} className={"mr-4 cursor-pointer"}/>
+                <div className={"flex flex-1 justify-end mr-4 gap-2"}>
+                    <ArrowPathIcon
+                        onClick={() => handleBroadcast()}
+                        width={55} className={"cursor-pointer p-2 border border-gray-400 rounded shadow"}
+                    />
+                    <ArrowLeftStartOnRectangleIcon
+                        onClick={onClickLogout}
+                        width={55} className={"cursor-pointer p-2 border border-gray-400 rounded shadow"}/>
+                </div>
             </div>
-            <div className={"grid lg:grid-cols-2 md:grid-cols-1 p-4 gap-4 overflow-hidden items-center justify-center"}>
-                <div className={"border-black bg-slate-200 flex flex-col w-full overflow-hidden min-h-full shadow p-3 rounded"}>
-                    <h3 className={"text-3xl font-bold"}>Smart Things</h3>
-                    <div className={"flex mt-3 gap-3 overflow-x-auto"}>
-                        {
-                            STLoading ? (
-                                    <div className={"flex flex-1 items-center justify-center"}>
-                                        <Loading/>
-                                    </div>
-                                ) :
-                                (
-                                    stDevices.map((device, index) => (
-                                        <div
-                                            onClick={() => selectSTDevice(device)}
-                                            className={"w-[150px] min-w-[150px] h-[120px] p-2 border shadow" +
-                                                " rounded bg-white flex flex-col cursor-pointer" +
-                                                " hover:scale-105 active:scale-95"} key={index}>
-                                            <div className={"h-5 flex justify-end"}>
-                                                <div
-                                                    className={`w-4 h-4 ${getStatusColor(device.status)} rounded-full shadow border`}/>
-                                            </div>
-                                            <div
-                                                className={"flex items-center justify-center"}>
-                                                <label className={"pointer-events-none"}>{device.device.name}</label>
-                                            </div>
-                                        </div>
-
-                                    ))
-                                )
-                        }
-                    </div>
-
-                </div>
-                <div className={"border-black bg-slate-200 flex flex-col min-h-full shadow p-3 rounded"}>
-                    <div className={"flex w-full justify-between"}>
-                        <h3 className={"text-3xl font-bold"}>Roku</h3>
-                        <img
-                            onClick={() => handleLoadRokuDevices(true)}
-                            className={"hover:opacity-80 active:scale-95 cursor-pointer"}
-                            src={refreshIcon} width={30} height={30}/>
-                    </div>
-                    <div className={"flex flex-1 mt-3 gap-3"}>
-                        {
-                            rokuLoading ? (
-                                    <div className={"flex flex-1 items-center justify-center"}>
-                                        <Loading/>
-                                    </div>
-                                ) :
-                                rokuDevices.length ?
-                                    (
-                                        rokuDevices.map((device, index) => (
-                                            <div
-                                                onClick={() => selectRokuDevice(device)}
-
-                                                className={"w-[150px] h-[120px] p-2 border shadow" +
-                                                    " rounded bg-white flex flex-col cursor-pointer" +
-                                                    " hover:scale-105 active:scale-95"} key={index}>
-                                                <div className={"h-5 flex justify-end"}>
-                                                    <div
-                                                        className={`w-4 h-4 ${getStatusColor(device.details.powerMode == "PowerOn")} rounded-full shadow border`}/>
-                                                </div>
-                                                <div
-                                                    className={"flex flex-1 items-center justify-center"}>
-                                                    <label
-                                                        className={"pointer-events-none"}>{device.details.friendlyDeviceName}</label>
-                                                </div>
-                                            </div>
-
-                                        ))
-                                    )
-                                    :
-                                    (
-                                        <div className={"flex flex-1 flex-col items-center justify-center"}>
-                                            <h2 className={"text-gray-400 italic"}>No Roku Devices Found</h2>
-                                            <StyledButton className={"mt-3"}>
-                                                Search Again
-                                            </StyledButton>
-                                        </div>
-                                    )
-                        }
-                    </div>
-                </div>
-                <div className={"border-black bg-slate-200 flex flex-col min-h-full shadow p-3 rounded"}>
-                    <h3 className={"text-3xl font-bold"}>Samsung</h3>
-
-                    <div className={"flex flex-1 mt-3 gap-3"}>
-                        {
-                            samsungLoading ? (
-                                    <div className={"flex flex-1 items-center justify-center"}>
-                                        <Loading/>
-                                    </div>
-                                ) :
-                                samsungDevices.length ?
-                                    (
-                                        samsungDevices.map((device, index) => (
-                                            <div
-                                                onClick={() => selectSamsungDevice(device)}
-
-                                                className={"w-[150px] h-[120px] p-2 border shadow" +
-                                                    " rounded bg-white flex flex-col cursor-pointer" +
-                                                    " hover:scale-105 active:scale-95"} key={index}>
-                                                <div className={"h-5 flex justify-end"}>
-                                                    <div
-                                                        className={`w-4 h-4 ${getStatusColor(device.device.powerState === "on")} rounded-full shadow border`}/>
-                                                </div>
-                                                <div
-                                                    className={"flex flex-1 items-center justify-center"}>
-                                                    <label
-                                                        className={"pointer-events-none"}>{device.device.name}</label>
-                                                </div>
-                                            </div>
-
-                                        ))
-                                    )
-                                    :
-                                    (
-                                        <div className={"flex flex-1 flex-col items-center justify-center"}>
-                                            <h2 className={"text-gray-400 italic"}>No Samsung Devices Found</h2>
-                                            <StyledButton className={"mt-3"}>
-                                                Search Again
-                                            </StyledButton>
-                                        </div>
-                                    )
-                        }
-                    </div>
-                </div>
+            <div className={"flex flex-col p-4 gap-4"}>
+                <ListContainer
+                    title={"Roku"}
+                    devices={rokuDevices}
+                    loading={rokuLoading}
+                    handleBroadcast={handleBroadcast}/>
+                <ListContainer
+                    title={"Samsung"}
+                    devices={samsungDevices}
+                    loading={samsungLoading}
+                    handleBroadcast={handleBroadcast}/>
             </div>
 
         </div>

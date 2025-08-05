@@ -1,33 +1,33 @@
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using System.Xml.Serialization;
-using Makaretu.Dns;
-using TvServer.Models;
+using TvServerV2.Models;
+using TvServerV2.Models.Roku;
+using TvServerV2.Models.Roku.HardwareModels;
 
-namespace TvServer.Services;
+namespace TvServerV2.Services;
 
-public class RokuService(IHttpClientFactory httpClientFactory)
+public class RokuService(
+    IHttpClientFactory httpClientFactory)
 {
-    
-    public List<string> DiscoverRokuDevices()
-    {
-        var multiCastService = new MultiCastService();
-        return multiCastService.DiscoverDevices("roku:ecp")
-            .Select(x => x.Location)
-            .ToList();
-    }
 
-    public async Task<RokuDeviceInfo> GetDeviceInfo(string ip)
+    public async Task<RokuDeviceInfo?> GetDeviceInfo(string ip)
     {
-        if (!ip.EndsWith("/"))
+        try
         {
-            ip += "/";
+            if (!ip.EndsWith("/"))
+            {
+                ip += "/";
+            }
+            if (!ip.StartsWith("http://"))
+                ip = "http://" + ip;
+            var client = httpClientFactory.CreateClient("default");
+            var response = await client.GetAsync(ip + "query/device-info");
+            var stringy = await response.Content.ReadAsStringAsync();
+            return RokuDeviceInfo.Parse(stringy);
         }
-        var client = httpClientFactory.CreateClient();
-        var response = await client.GetAsync(ip + "query/device-info");
-        var stringy = await response.Content.ReadAsStringAsync();
-        return RokuDeviceInfo.Parse(stringy);
+        catch
+        {
+            return null;
+        }
     }
     
     public async Task<RokuApps> GetInstalledApps(string ip)
@@ -36,13 +36,13 @@ public class RokuService(IHttpClientFactory httpClientFactory)
         {
             ip += "/";
         }
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient("default");
         var response = await client.GetAsync(ip + "query/apps");
         var stringy = await response.Content.ReadAsStringAsync();
         
         var serializer = new XmlSerializer(typeof(RokuApps));
         using var reader = new StringReader(stringy);
-        return (RokuApps)serializer.Deserialize(reader);
+        return (RokuApps)serializer.Deserialize(reader)!;
     }
     
     public async Task<bool> SendKeyPress(string ip, RokuKeypress keypress, string? additionalData = null)
@@ -52,7 +52,7 @@ public class RokuService(IHttpClientFactory httpClientFactory)
             ip += "/";
         }
         var url = ip + ParseKeypress(keypress, additionalData);
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient("default");
         var response = await client.PostAsync(url, null);
         return response.IsSuccessStatusCode;
     }
@@ -62,7 +62,7 @@ public class RokuService(IHttpClientFactory httpClientFactory)
             ip += "/";
 
         string url = ip + $"query/icon/{appId}";
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient("default");
         var response = await client.GetAsync(url);
         if (!response.IsSuccessStatusCode)
             throw new HttpRequestException($"Failed to retrieve app icon. Status: {response.StatusCode}");

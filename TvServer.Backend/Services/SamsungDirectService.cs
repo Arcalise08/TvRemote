@@ -1,44 +1,27 @@
 using System.Net.WebSockets;
 using System.Text.Json;
-using TvServer.Models;
-using TvServer.Models.Samsung;
-using TvServer.Models.Samsung.Events;
+using Microsoft.EntityFrameworkCore;
+using TvServerV2.Models;
+using TvServerV2.Models.Samsung;
+using TvServerV2.Models.Samsung.Events;
+using TvServerV2.Models.Samsung.HardwareModels;
 using Websocket.Client;
 
-namespace TvServer.Services;
+namespace TvServerV2.Services;
 
 public record SavedSamsungClient(string Ip, WebsocketClient Client);
-public class SamsungDirectService(IHttpClientFactory httpClientFactory, Settings settings)
+public class SamsungDirectService(
+    IHttpClientFactory httpClientFactory,
+    IServiceProvider provider,
+    Settings settings)
 {
     private static readonly List<SavedSamsungClient> Clients = new();
-    public List<string> DiscoverSamsungDevices()
-    {
-        var multiCastService = new MultiCastService();
-        var samsungPossibleDevices = multiCastService.DiscoverDevices("ssdp:all")
-            .Where(x => x.RawResponse.ToLower().Contains("samsung"));
-        var result = new List<string>();
-        foreach (var samsungDevice in samsungPossibleDevices)
-        {
-            if (Uri.TryCreate(samsungDevice.Location, UriKind.Absolute, out Uri uri))
-            {
-                var host = uri.Host;
-                if (!result.Contains(host))
-                    result.Add(host);
-            }
-        }
 
-        return result;
-    }
     public List<string> GetConnectedSamsungDevices()
     {
         return Clients.Select(x => x.Ip).ToList();
     }
-
-    public List<string> GetSavedSamsungDevices()
-    {
-        return settings.SamsungTvProfiles.Select(x => x.Ip).ToList();
-    }
-
+    
     public async Task<SamsungTvInfo?> GetDeviceInfo(string ip)
     {
         string url = $"https://{ip}:8002/api/v2/";
@@ -68,9 +51,9 @@ public class SamsungDirectService(IHttpClientFactory httpClientFactory, Settings
                 }
             });
             var client = new WebsocketClient(new Uri(url), factory);
-            client.MessageReceived.Subscribe(msg => _ = HandleMessageRecieved(ip, msg));
             await client.Start();
             var savedSamsungClient = new SavedSamsungClient(ip, client);
+            savedSamsungClient.Client.MessageReceived.Subscribe(async o => await HandleMessageRecieved(ip, o));
             Clients.Add(savedSamsungClient);
             return savedSamsungClient;
         }
@@ -115,7 +98,14 @@ public class SamsungDirectService(IHttpClientFactory httpClientFactory, Settings
                 {
                     var installedAppsEvents = JsonSerializer.Deserialize<SamsungInstalledAppsEvent>(json,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    
+                    if (installedAppsEvents is null) return;
+                    using var scope = provider.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    var tv = await db.SamsungDevices
+                        .FirstOrDefaultAsync(x => x.LastKnownIp == ip);
+                    if (tv is null) return;
+                    tv.SamsungApps = installedAppsEvents.Data.Data;
+                    await db.SaveChangesAsync();
                 }
             }
         }

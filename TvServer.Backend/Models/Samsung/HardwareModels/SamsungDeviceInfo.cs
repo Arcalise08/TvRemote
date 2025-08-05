@@ -1,8 +1,6 @@
-﻿using System.Text.Json;
+﻿namespace TvServerV2.Models.Samsung.HardwareModels;
 
-namespace TvServer.Models;
-
-public class DeviceInfo
+public class SamsungAdditionalDeviceInfo
 {
     public string? FrameTVSupport { get; set; }
     public string? GamePadSupport { get; set; }
@@ -32,22 +30,4 @@ public class DeviceInfo
     public string? Type { get; set; }
     public string? Udn { get; set; }
     public string? WifiMac { get; set; }
-}
-
-public class SamsungTvInfo
-{
-    public DeviceInfo? Device { get; set; }
-    public string? Id { get; set; }
-    public string? IsSupport { get; set; }
-    public string? Name { get; set; }
-    public string? Remote { get; set; }
-    public string? Type { get; set; }
-    public string? Uri { get; set; }
-    public string? Version { get; set; }
-
-    public static SamsungTvInfo? Parse(string json)
-    {
-        return JsonSerializer.Deserialize<SamsungTvInfo>(json,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-    }
 }

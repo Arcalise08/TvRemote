@@ -4,33 +4,46 @@ import {immer} from 'zustand/middleware/immer'
 import useTokenStore from "./useTokenStore";
 import {HOME_SERVER_BASE_URL} from "../constants.ts";
 import {BasicResult} from "../models/global-types.ts";
-import {SamsungDevice, SamsungKeypress, SamsungKeypressType} from "../models/samsung-direct-types.ts";
-import {SamsungApi} from "../apis/samsung-api.ts";
+import {
+    ISamsungDeviceRequest,
+    ISamsungKeypressRequest,
+    ISamsungLaunchAppRequest,
+    SamsungDeviceRequest,
+    SamsungKeypress,
+    SamsungKeypressRequest,
+    SamsungKeypressType,
+    SamsungLaunchAppRequest,
+    SamsungTvDto,
+    TvControlClient
+} from "../apis/TvControlClient.ts";
 
 
 export interface SamsungDeviceStore {
-    samsungDevices: SamsungDevice[];
+    samsungDevices: SamsungTvDto[];
     loadSamsungDevices: () => Promise<BasicResult>;
-    sendKeyPress: (samsungDevice : SamsungDevice, keypress : SamsungKeypress, type : SamsungKeypressType) => Promise<boolean>;
-    connectSamsungDevice: (ip : string) => Promise<boolean>
+    sendKeyPress: (samsungDevice : SamsungTvDto, keypress : SamsungKeypress, type : SamsungKeypressType) => Promise<boolean>;
+    loadApps: (deviceId : string) => Promise<void>;
+    launchApp: (deviceId : string, appId : string) => Promise<boolean>;
 }
 
 
 const useSamsungDeviceStore = create<SamsungDeviceStore>()(
     devtools(
         immer((set) => {
-            let apiClient: SamsungApi | null = null;
+            let apiClient: TvControlClient | null = null;
 
-            const initializeSamsungClient = (): SamsungApi | null => {
+            const initializeSamsungClient = (): TvControlClient | null => {
                 if (apiClient) return apiClient;
                 const token = useTokenStore.getState().token;
                 if (!token) return null;
-                apiClient = new SamsungApi(token, HOME_SERVER_BASE_URL);
+                /*apiClient = new TvControlClient(HOME_SERVER_BASE_URL, {fetch: (url, init) =>
+                        authFetch(url,  init,  token)});*/
+                apiClient = new TvControlClient(HOME_SERVER_BASE_URL);
                 return apiClient;
             };
             
             return ({
-                samsungDevices: [] as SamsungDevice[],
+                samsungDevices: [] as SamsungTvDto[],
                 loadSamsungDevices: async () => {
                     const api = initializeSamsungClient();
                     if (!api)
@@ -38,15 +51,15 @@ const useSamsungDeviceStore = create<SamsungDeviceStore>()(
                             isSuccessful: false,
                             error: "Unable to initialize Samsung client."
                         } as BasicResult
-                    const saved = await api.getSavedDevices() ?? [];
-                    const devices = await api.scanForSamsungDevices();
-                    const uniqueDevices = Array.from(new Set([...saved, ...devices]));
-                    
-                    const infos = [] as SamsungDevice[]
-                    for (const ip of uniqueDevices) {
-                        const details = await api.getDeviceInfo(ip);
+                    const devices = await api.apiSamsungDevicesGet();
+                    const infos = [] as SamsungTvDto[]
+                    for (const device of devices) {
+                        const req = {
+                            deviceId: device.id
+                        } as ISamsungDeviceRequest
+                        const details = await api.apiSamsungDevicesInfo(new SamsungDeviceRequest(req));
                         if (!details) continue;
-                        infos.push({ip, device: details});
+                        infos.push(details);
                     }
                     set((draft) => {
                         draft.samsungDevices = infos;
@@ -56,17 +69,32 @@ const useSamsungDeviceStore = create<SamsungDeviceStore>()(
                         error: null
                     } as BasicResult
                 },
-                connectSamsungDevice: async (ip) => {
+                loadApps: async (deviceId : string) => {
                     const api = initializeSamsungClient();
                     if (!api)
-                        return false;
-                    return await api.connectToDevice(ip) ?? false;
+                        return;
+                    const apps = await api.apiSamsungDevicesApps(deviceId);
                 },
-                sendKeyPress: async (samsungDevice : SamsungDevice, keypress : SamsungKeypress, type : SamsungKeypressType) => {
+                sendKeyPress: async (samsungDevice : SamsungTvDto, keypress : SamsungKeypress, type : SamsungKeypressType) => {
                     const api = initializeSamsungClient();
                     if (!api)
                         return false;
-                    return await api.sendKeyPress(samsungDevice.ip, keypress, type)
+                    const req = {
+                        deviceId: samsungDevice.id,
+                        keypress: keypress,
+                        type: type
+                    } as ISamsungKeypressRequest;
+                    return await api.apiSamsungDevicesKeyPress(new SamsungKeypressRequest(req));
+                },
+                launchApp: async (deviceId : string, appId : string) => {
+                    const api = initializeSamsungClient();
+                    if (!api)
+                        return false;
+                    const req = {
+                        deviceId,
+                        appId
+                    } as ISamsungLaunchAppRequest;
+                    return await api.apiSamsungDevicesLaunchApp(new SamsungLaunchAppRequest(req));
                 }
             });
         })

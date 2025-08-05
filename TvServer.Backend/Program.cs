@@ -1,86 +1,47 @@
-using System.Diagnostics;
-using Makaretu.Dns;
-using Microsoft.AspNetCore.Mvc;
-using TvServer.Models;
-using TvServer.Routes;
-using TvServer.Services;
+using Microsoft.EntityFrameworkCore;
+using TvServerV2.Models;
+using TvServerV2.Routes;
+using TvServerV2.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Enter the Bearer token in the format: Bearer {token}"
-    });
+var services = builder.Services;
+services.AddEndpointsApiExplorer();
 
-    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] { }
-        }
-    });
-});
-builder.Services.AddCors(defaultPolicy => defaultPolicy.AddDefaultPolicy(
+services.AddCors(defaultPolicy => defaultPolicy.AddDefaultPolicy(
     builder => builder
         .AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader()
-    ));
-builder.Services.AddHttpClient();
-builder.Services.AddHttpClient("no-ssl")
+));
+services.AddSwaggerGen();
+services.AddSingleton<RokuService>();
+services.AddSingleton<SamsungDirectService>();
+services.AddSingleton<MulticastBackgroundService>();
+services.AddMemoryCache();
+builder.Services.AddSingleton(await Settings.LoadSettings());
+services.AddHttpClient("default", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+services.AddHttpClient("no-ssl", client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(10);
+    })
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
     {
         ServerCertificateCustomValidationCallback = (m, c, ch, e) => true
     });
-builder.Services.AddSingleton<RokuService>();
-builder.Services.AddSingleton<SamsungDirectService>();
-builder.Services.AddSingleton(await Settings.LoadSettings());
+services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("postgres")));
 var app = builder.Build();
-
-var requiredApiKey = builder.Configuration.GetValue<string>("ApiKey");
-if (string.IsNullOrWhiteSpace(requiredApiKey))
-    throw new Exception("Required API Key is missing");
 app.UseCors();
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
-
-app.Use(async (context, next) =>
-{
-    if (!context.Request.Path.StartsWithSegments("/api"))
-    {
-        await next.Invoke();
-        return;
-    }
-    if (!context.Request.Headers.TryGetValue("Authorization", out var authorizationHeader) || 
-        !authorizationHeader.ToString().StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) ||
-        authorizationHeader.ToString().Substring("Bearer ".Length) != requiredApiKey)
-    {
-        context.Response.StatusCode = 401;
-        await context.Response.WriteAsync("Unauthorized: Invalid or missing API key.");
-        return;
-    }
-    await next();
-});
-
-app.MapCecRoutes();
-app.MapSamsungRoutes();
 app.MapRokuRoutes();
+app.MapSamsungRoutes();
+app.MapBasicRoutes();
 
 app.UseStaticFiles();
 app.UseRouting();

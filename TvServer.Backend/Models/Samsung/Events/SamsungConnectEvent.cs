@@ -1,7 +1,4 @@
-﻿namespace TvServer.Models.Samsung;
-
-using System;
-using System.Collections.Generic;
+﻿namespace TvServerV2.Models.Samsung.Events;
 
 public class Attributes
 {

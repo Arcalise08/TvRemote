@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace TvServer.Models;
+namespace TvServerV2.Models;
 
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -100,4 +100,24 @@ public enum SamsungKeypressType
     Click,
     Press,
     Release
+}
+
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum DeviceType
+{
+    Roku,
+    Samsung,
+    AppleTV,
+    Chromecast,
+    FireTV,
+    NvidiaShield,
+    Other
+}
+
+public enum DeviceStatus
+{
+    Online,
+    Offline,
+    Unknown
 }

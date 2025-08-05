@@ -1,3 +1,3 @@
-namespace TvServer.Models.Samsung;
+namespace TvServerV2.Models.Samsung;
 
-public record SamsungLaunchAppRequest(string Ip, string AppId);
+public record SamsungLaunchAppRequest(string DeviceId, string AppId);

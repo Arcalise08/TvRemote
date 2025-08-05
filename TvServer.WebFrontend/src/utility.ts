@@ -1,3 +1,18 @@
+export const setAsyncTimeout = (duration: number) => new Promise(resolve => setTimeout(resolve, duration));
+export const authFetch = (url: RequestInfo, init?: RequestInit, token ?: string) => {
+    if (!token)
+        return fetch(url, init);
+
+    const modifiedInit = {
+        ...init,
+        headers: {
+            ...init?.headers,
+            Authorization: `Bearer ${token}`
+        }
+    };
+    return fetch(url, modifiedInit);
+};
+
 export async function displayAppIcon(iconBlob : Blob): Promise<string> {
     try {
         return URL.createObjectURL(iconBlob);

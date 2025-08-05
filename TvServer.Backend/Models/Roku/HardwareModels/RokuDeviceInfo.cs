@@ -1,9 +1,10 @@
 using System.Xml.Linq;
 
-namespace TvServer.Models;
+namespace TvServerV2.Models.Roku.HardwareModels;
 
 public record RokuDeviceInfo
 {
+    public string Id { get; init; } = Guid.NewGuid().ToString();
     public string Udn { get; init; }
     public string SerialNumber { get; init; }
     public string DeviceId { get; init; }
