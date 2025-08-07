@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using TvServerV2.Models;
-using TvServerV2.Routes;
-using TvServerV2.Services;
+using TvServer.Models;
+using TvServer.Routes;
+using TvServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;

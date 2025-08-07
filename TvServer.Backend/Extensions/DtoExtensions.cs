@@ -1,13 +1,12 @@
-﻿using TvServerV2.Models;
-using TvServerV2.Models.Roku;
-using TvServerV2.Models.Samsung;
-using TvServerV2.Models.Samsung.HardwareModels;
+﻿using TvServer.Models;
+using TvServer.Models.Roku;
+using TvServer.Models.Samsung;
 
-namespace TvServerV2.Extensions;
+namespace TvServer.Extensions;
 
 public static class DtoExtensions
 {
-    public static RokuTvDto ToDto(this SavedRokuDeviceEntity entity, DeviceStatus status)
+    public static RokuTvDto ToDto(this SavedRokuDeviceEntity entity)
     {
         return new RokuTvDto
         {
@@ -15,11 +14,11 @@ public static class DtoExtensions
             DeviceName = entity.DeviceName,
             LastKnownIp = entity.LastKnownIp,
             RokuApps = entity.RokuApps,
-            Status = status
+            Status = entity.Status
         };
     }
 
-    public static SamsungTvDto ToDto(this SavedSamsungDeviceEntity entity, DeviceStatus status)
+    public static SamsungTvDto ToDto(this SavedSamsungDeviceEntity entity)
     {
         return new SamsungTvDto
         {
@@ -28,7 +27,7 @@ public static class DtoExtensions
             LastKnownIp = entity.LastKnownIp,
             SamsungApps = entity.SamsungApps,
             DeviceInfo = entity.DeviceInfo,
-            Status = status
+            Status = entity.Status
         };
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using TvServerV2.Models.Samsung.Events;
-using TvServerV2.Models.Samsung.HardwareModels;
+using TvServer.Models.Samsung.Events;
+using TvServer.Models.Samsung.HardwareModels;
 
-namespace TvServerV2.Models.Samsung;
+namespace TvServer.Models.Samsung;
 
 public class SamsungTvDto
 {

@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace TvServerV2.Models.Roku.HardwareModels;
+namespace TvServer.Models.Roku.HardwareModels;
 
 [XmlRoot("apps")]
 public class RokuApps

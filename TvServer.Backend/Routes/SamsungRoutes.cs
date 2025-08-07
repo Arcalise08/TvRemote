@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using TvServerV2.Extensions;
-using TvServerV2.Models;
-using TvServerV2.Models.Samsung;
-using TvServerV2.Models.Samsung.HardwareModels;
-using TvServerV2.Services;
+using TvServer.Extensions;
+using TvServer.Models;
+using TvServer.Models.Samsung;
+using TvServer.Models.Samsung.HardwareModels;
+using TvServer.Services;
 
-namespace TvServerV2.Routes;
+namespace TvServer.Routes;
 
 public static class SamsungRoutes
 {
@@ -21,7 +21,7 @@ public static class SamsungRoutes
                 CancellationToken ct) =>
             {
                 var savedDevices = await db.SamsungDevices
-                    .Select(x => x.ToDto(DeviceStatus.Unknown))
+                    .Select(x => x.ToDto())
                     .ToListAsync(ct);
                 return Results.Ok(savedDevices);
             }).WithTags("Samsung Devices")
@@ -39,54 +39,64 @@ public static class SamsungRoutes
                 var savedDevice = await db.SamsungDevices
                     .Include(x => x.SamsungApps)
                     .Include(savedSamsungDeviceEntity => savedSamsungDeviceEntity.DeviceInfo)
+                    .ThenInclude(samsungTvInfo => samsungTvInfo.Device)
                     .FirstOrDefaultAsync(x => x.Id == req.DeviceId,
                         cancellationToken: ct);
                 if (savedDevice is null)
                     return Results.NotFound();
                 cache.Set(savedDevice.Id, savedDevice.LastKnownIp);
-                bool online = false;
-                SamsungTvInfo? info = null;
-                try
+                _ = Task.Run(async () =>
                 {
-                    info = await service.GetDeviceInfo(savedDevice.LastKnownIp);
-                }
-                catch (Exception e) {}
-                if (info == null)
-                    return Results.Ok(savedDevice.ToDto(DeviceStatus.Offline));
-                
-                if (!string.IsNullOrWhiteSpace(info.Name))
-                    savedDevice.DeviceName = info.Name;
-                if (savedDevice.DeviceInfo is null)
-                {
-                    info.Id = Guid.NewGuid().ToString();
-                    if (info.Device is not null)
-                        info.Device.Id = Guid.NewGuid().ToString();
-                    savedDevice.DeviceInfo = info;
-                    db.Entry(savedDevice.DeviceInfo).State = EntityState.Added;
-                }
-                else
-                {
-                    info.Id = savedDevice.DeviceInfo.Id;
-                    if (info.Device is not null)
-                        info.Device.Id = savedDevice.DeviceInfo.Id;
                     
-                    db.Entry(savedDevice.DeviceInfo).CurrentValues.SetValues(info);
-                    if (info.Device != null)
+                    SamsungTvInfo? info = null;
+                    try
                     {
-                        if (savedDevice.DeviceInfo.Device == null)
-                        {
+                        info = await service.GetDeviceInfo(savedDevice.LastKnownIp);
+                    }
+                    catch (Exception e) {}
+
+                    if (info is null)
+                    {
+                        savedDevice.Status = DeviceStatus.Offline;
+                        await db.SaveChangesAsync();
+                        return;
+                    }
+                    savedDevice.Status = DeviceStatus.Online;
+                    if (!string.IsNullOrWhiteSpace(info.Name))
+                        savedDevice.DeviceName = info.Name;
+                    if (savedDevice.DeviceInfo is null)
+                    {
+                        info.Id = Guid.NewGuid().ToString();
+                        if (info.Device is not null)
                             info.Device.Id = Guid.NewGuid().ToString();
-                            savedDevice.DeviceInfo.Device = info.Device;
-                            db.Entry(savedDevice.DeviceInfo.Device).State = EntityState.Added;
-                        }
-                        else
+                        savedDevice.DeviceInfo = info;
+                        db.Entry(savedDevice.DeviceInfo).State = EntityState.Added;
+                    }
+                    else
+                    {
+                        info.Id = savedDevice.DeviceInfo.Id;
+                        if (info.Device is not null)
+                            info.Device.Id = savedDevice.DeviceInfo.Device?.Id;
+                    
+                        db.Entry(savedDevice.DeviceInfo).CurrentValues.SetValues(info);
+                        if (info.Device != null)
                         {
-                            db.Entry(savedDevice.DeviceInfo.Device).CurrentValues.SetValues(info.Device);
+                            if (savedDevice.DeviceInfo.Device == null)
+                            {
+                                info.Device.Id = Guid.NewGuid().ToString();
+                                savedDevice.DeviceInfo.Device = info.Device;
+                                db.Entry(savedDevice.DeviceInfo.Device).State = EntityState.Added;
+                            }
+                            else
+                            {
+                                db.Entry(savedDevice.DeviceInfo.Device).CurrentValues.SetValues(info.Device);
+                            }
                         }
                     }
-                }
-                await db.SaveChangesAsync(ct);
-                return Results.Ok(savedDevice.ToDto(DeviceStatus.Online));
+                    await db.SaveChangesAsync(ct);
+                });
+                
+                return Results.Ok(savedDevice.ToDto());
             }).WithTags("Samsung Devices")
             .Produces<SamsungTvDto>(200, "application/json");
 

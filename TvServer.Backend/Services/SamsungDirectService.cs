@@ -1,59 +1,79 @@
 using System.Net.WebSockets;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using TvServerV2.Models;
-using TvServerV2.Models.Samsung;
-using TvServerV2.Models.Samsung.Events;
-using TvServerV2.Models.Samsung.HardwareModels;
+using Microsoft.Extensions.Caching.Memory;
+using TvServer.Models;
+using TvServer.Models.Samsung.Events;
+using TvServer.Models.Samsung.HardwareModels;
 using Websocket.Client;
 
-namespace TvServerV2.Services;
+namespace TvServer.Services;
 
-public record SavedSamsungClient(string Ip, WebsocketClient Client);
+public record SavedSamsungClient(string DeviceId, string Ip, WebsocketClient Client);
 public class SamsungDirectService(
     IHttpClientFactory httpClientFactory,
-    IServiceProvider provider,
-    Settings settings)
+    IServiceProvider provider)
 {
     private static readonly List<SavedSamsungClient> Clients = new();
-
-    public List<string> GetConnectedSamsungDevices()
-    {
-        return Clients.Select(x => x.Ip).ToList();
-    }
     
     public async Task<SamsungTvInfo?> GetDeviceInfo(string ip)
     {
-        string url = $"https://{ip}:8002/api/v2/";
-        var client = httpClientFactory.CreateClient("no-ssl");
-        var response = await client.GetAsync(url);
-        var stringy = await response.Content.ReadAsStringAsync();
-        return SamsungTvInfo.Parse(stringy);
+        try
+        {
+            string url = $"https://{ip}:8002/api/v2/";
+            var client = httpClientFactory.CreateClient("no-ssl");
+            var response = await client.GetAsync(url);
+            var stringy = await response.Content.ReadAsStringAsync();
+            return SamsungTvInfo.Parse(stringy);
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
     }
 
     private async Task<SavedSamsungClient?> ConnectToDevice(string ip)
     {
         try
         {
-            if (Clients.Any(x => x.Ip == ip))
-                return Clients.First(x => x.Ip == ip);
-            var profile = settings.SamsungTvProfiles.FirstOrDefault(x => x.Ip == ip);
-            var url = $"wss://{ip}:8002/api/v2/channels/samsung.remote.control";
-            if (profile is not null)
-                url += $"?token={profile.Token}";
+            var savedClient = Clients.FirstOrDefault(x => x.Ip == ip);
+            if (savedClient is not null)
+                return savedClient;
+            using var scope = provider.CreateScope();
+            var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
+            var cachedTv = cache.Get<CachedDevice>(ip);
+            if (cachedTv is null || cachedTv?.Token is null)
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var savedTv = await db.SamsungDevices
+                    .FirstOrDefaultAsync(x => x.LastKnownIp == ip);
+                if (savedTv is not null)
+                {
+                    cachedTv = new CachedDevice(savedTv.Id, savedTv.LastKnownIp, savedTv.Token);
+                    cache.Set(ip, cachedTv);
+                }
+            }
+            
+            if (cachedTv is null) 
+                return null;
+            var name = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("Kyles Super Awesome Remote"));
+            var url = $"wss://{cachedTv.IpAddress}:8002/api/v2/channels/samsung.remote.control?name={name}&token={cachedTv.Token}";
             var factory = new Func<ClientWebSocket>(() => new ClientWebSocket
             {
                 Options =
                 {
-                    KeepAliveInterval = TimeSpan.FromSeconds(5),
+                    KeepAliveInterval = TimeSpan.FromSeconds(10),
                     RemoteCertificateValidationCallback = (m, c, ch, e) => true
-
                 }
             });
-            var client = new WebsocketClient(new Uri(url), factory);
+            var client = new WebsocketClient(new Uri(url), factory)
+            {
+                ReconnectTimeout = null
+            };
             await client.Start();
-            var savedSamsungClient = new SavedSamsungClient(ip, client);
-            savedSamsungClient.Client.MessageReceived.Subscribe(async o => await HandleMessageRecieved(ip, o));
+            client.MessageReceived.Subscribe(
+                async o => await HandleMessageRecieved(cachedTv.Id, o));
+            var savedSamsungClient = new SavedSamsungClient(cachedTv.Id, cachedTv.IpAddress, client);
             Clients.Add(savedSamsungClient);
             return savedSamsungClient;
         }
@@ -63,7 +83,7 @@ public class SamsungDirectService(
         }
 
     }
-    public async Task HandleMessageRecieved(string ip, ResponseMessage message)
+    public async Task HandleMessageRecieved(string deviceId, ResponseMessage message)
     {
         try
         { 
@@ -77,22 +97,15 @@ public class SamsungDirectService(
                     var connectEvent = JsonSerializer.Deserialize<SamsungConnectEvent>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     if (connectEvent is null || string.IsNullOrWhiteSpace(connectEvent.Data.Token))
                         return;
-                    var profile = settings.SamsungTvProfiles.FirstOrDefault(x => x.Ip == ip);
-                    if (profile is not null)
-                    {
-                        var index = settings.SamsungTvProfiles.IndexOf(profile);
-                        profile.Token = connectEvent.Data.Token;
-                        settings.SamsungTvProfiles[index] = profile;
-                    }
-                    else
-                    {
-                        settings.SamsungTvProfiles.Add(new SamsungTvProfile()
-                        {
-                            Ip = ip,
-                            Token = connectEvent.Data.Token,
-                        });
-                    }
-                    await settings.SaveSettings();
+                    using var scope = provider.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    var tv = await db.SamsungDevices
+                        .FirstOrDefaultAsync(x => x.Id == deviceId);
+                    if (tv is null) return;
+                    if (tv.Token is not null) return;
+
+                    tv.Token = connectEvent.Data.Token;
+                    await db.SaveChangesAsync();
                 }
                 if (eventElement.GetString() == "ed.installedApp.get")
                 {
@@ -102,7 +115,7 @@ public class SamsungDirectService(
                     using var scope = provider.CreateScope();
                     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                     var tv = await db.SamsungDevices
-                        .FirstOrDefaultAsync(x => x.LastKnownIp == ip);
+                        .FirstOrDefaultAsync(x => x.Id == deviceId);
                     if (tv is null) return;
                     tv.SamsungApps = installedAppsEvents.Data.Data;
                     await db.SaveChangesAsync();
@@ -114,12 +127,12 @@ public class SamsungDirectService(
             Console.WriteLine($"An error occurred: {ex.Message}");
         }
     }
-    public async Task<bool> SendKeyPress(string ip, SamsungKeypress keypress, SamsungKeypressType type)
+    public async Task<bool> SendKeyPress(string ipAddr, SamsungKeypress keypress, SamsungKeypressType type)
     {
-        var client = Clients.FirstOrDefault(x => x.Ip == ip);
+        var client = Clients.FirstOrDefault(x => x.Ip == ipAddr);
         if (client is null)
         {
-            client = await ConnectToDevice(ip);
+            client = await ConnectToDevice(ipAddr);
             if (client is null)
                 return false;
         }
@@ -137,12 +150,12 @@ public class SamsungDirectService(
         client.Client.Send(commandTxt);
         return true;
     }
-    public async Task<bool> GetInstalledApps(string ip)
+    public async Task<bool> GetInstalledApps(string ipAddr)
     {
-        var client = Clients.FirstOrDefault(x => x.Ip == ip);
+        var client = Clients.FirstOrDefault(x => x.Ip == ipAddr);
         if (client is null)
         {
-            client = await ConnectToDevice(ip);
+            client = await ConnectToDevice(ipAddr);
             if (client is null)
                 return false;
         }
@@ -160,7 +173,7 @@ public class SamsungDirectService(
     }
     public async Task<bool> LaunchApp(string ip, string? appId = null)
     {
-        string url = $"https://{ip}:8002/api/v2/applications/{appId}";
+        var url = $"https://{ip}:8002/api/v2/applications/{appId}";
         var client = httpClientFactory.CreateClient("no-ssl");
         var response = await client.PostAsync(url, null);
         var stringy = await response.Content.ReadAsStringAsync();

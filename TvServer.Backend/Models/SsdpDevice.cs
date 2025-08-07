@@ -1,4 +1,4 @@
-﻿namespace TvServerV2.Models;
+﻿namespace TvServer.Models;
 
 public class SsdpDevice
 {

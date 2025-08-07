@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using TvServerV2.Models.Roku.HardwareModels;
+using System.Text.Json.Serialization;
+using TvServer.Models.Roku.HardwareModels;
 
-namespace TvServerV2.Models.Roku;
+namespace TvServer.Models.Roku;
 
 public class SavedRokuDeviceEntity
 {
@@ -16,5 +17,7 @@ public class SavedRokuDeviceEntity
     public required string LastKnownIp { get; set; }
     public RokuApps? RokuApps { get; set; }
     public RokuDeviceInfo? DeviceInfo { get; set; }
+    public DeviceStatus Status { get; set; }
+
 
 }

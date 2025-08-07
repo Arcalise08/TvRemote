@@ -1,13 +1,12 @@
-﻿using System.Collections.Concurrent;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using TvServerV2.Models;
-using TvServerV2.Models.Roku;
-using TvServerV2.Models.Samsung;
+using TvServer.Models;
+using TvServer.Models.Roku;
+using TvServer.Models.Samsung;
 
-namespace TvServerV2.Services;
+namespace TvServer.Services;
 
 public class MulticastBackgroundService(IServiceProvider serviceProvider)
 {

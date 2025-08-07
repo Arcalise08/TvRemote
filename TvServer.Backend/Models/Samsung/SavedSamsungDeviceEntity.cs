@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using TvServerV2.Models.Samsung.Events;
-using TvServerV2.Models.Samsung.HardwareModels;
+using TvServer.Models.Samsung.Events;
+using TvServer.Models.Samsung.HardwareModels;
 
-namespace TvServerV2.Models.Samsung;
+namespace TvServer.Models.Samsung;
 
 public class SavedSamsungDeviceEntity
 {
@@ -15,6 +15,9 @@ public class SavedSamsungDeviceEntity
     [Required]
     [MaxLength(100)]
     public required string LastKnownIp { get; set; }
+    [MaxLength(255)]
+    public string? Token { get; set; }
+    public DeviceStatus Status { get; set; }
     public List<SamsungAppData>? SamsungApps { get; set; }
     public SamsungTvInfo? DeviceInfo { get; set; }
 }

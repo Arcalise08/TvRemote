@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using TvServerV2.Models.Roku.HardwareModels;
+using TvServer.Models.Roku.HardwareModels;
 
-namespace TvServerV2.Models.Roku;
+namespace TvServer.Models.Roku;
 
 public class RokuTvDto
 {

@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TvServerV2.Models;
-using TvServerV2.Services;
+using TvServer.Models;
+using TvServer.Services;
 
-namespace TvServerV2.Routes;
+namespace TvServer.Routes;
 
 public static class BasicRoutes
 {

@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using TvServerV2.Extensions;
-using TvServerV2.Models;
-using TvServerV2.Models.Roku;
-using TvServerV2.Models.Roku.HardwareModels;
-using TvServerV2.Services;
+using TvServer.Extensions;
+using TvServer.Models;
+using TvServer.Models.Roku;
+using TvServer.Models.Roku.HardwareModels;
+using TvServer.Services;
 
-namespace TvServerV2.Routes;
+namespace TvServer.Routes;
 
 public static class RokuRoutes
 {
@@ -21,7 +21,9 @@ public static class RokuRoutes
                 CancellationToken ct) =>
             {
                 var savedDevices = await db.RokuDevices
-                    .Select(x => x.ToDto(DeviceStatus.Unknown))
+                    .Select(x => x.ToDto())
+                    .Include(x => x.RokuApps)
+                    .Include(x => x.RokuDeviceInfo)
                     .ToListAsync(ct);
                 return Results.Ok(savedDevices);
             }).WithTags("Roku Devices")
@@ -43,18 +45,38 @@ public static class RokuRoutes
                 if (savedDevice is null)
                     return Results.NotFound();
                 cache.Set(savedDevice.Id, savedDevice.LastKnownIp);
-                var info = await service.GetDeviceInfo(savedDevice.LastKnownIp);
-                if (info == null)
-                    return Results.Ok(savedDevice.ToDto(DeviceStatus.Offline));
-                if (!string.IsNullOrWhiteSpace(info.FriendlyDeviceName))
-                    savedDevice.DeviceName = info.FriendlyDeviceName;
-                if (savedDevice.DeviceInfo is null)
-                    info = info with { Id = Guid.NewGuid().ToString() };
-                else
-                    info = info with { Id = savedDevice.DeviceInfo.Id };
-                savedDevice.DeviceInfo = info;
-                await db.SaveChangesAsync(ct);
-                return Results.Ok(savedDevice.ToDto(DeviceStatus.Online));
+                _ = Task.Run(async () =>
+                {
+                    
+                    RokuDeviceInfo? info = null;
+                    try
+                    {
+                        info = await service.GetDeviceInfo(savedDevice.LastKnownIp);
+                    }
+                    catch (Exception e) {}
+
+                    if (info is null)
+                    {
+                        savedDevice.Status = DeviceStatus.Offline;
+                        await db.SaveChangesAsync();
+                        return;
+                    }
+                    savedDevice.Status = DeviceStatus.Online;
+                    if (!string.IsNullOrWhiteSpace(info.FriendlyDeviceName))
+                        savedDevice.DeviceName = info.FriendlyDeviceName;
+                    if (savedDevice.DeviceInfo is null)
+                    {
+                        savedDevice.DeviceInfo = info;
+                        db.Entry(savedDevice.DeviceInfo).State = EntityState.Added;
+                    }
+                    else
+                    {
+                        info.Id = savedDevice.DeviceInfo.Id;
+                        db.Entry(savedDevice.DeviceInfo).CurrentValues.SetValues(info);
+                    }
+                    await db.SaveChangesAsync(ct);
+                });
+                return Results.Ok(savedDevice.ToDto());
             }).WithTags("Roku Devices")
             .Produces<RokuTvDto>(200, "application/json");
         

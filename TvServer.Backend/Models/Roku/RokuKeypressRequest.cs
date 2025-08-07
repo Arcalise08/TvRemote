@@ -1,4 +1,4 @@
-namespace TvServerV2.Models.Roku;
+namespace TvServer.Models.Roku;
 
 public record RokuKeypressRequest(
     string DeviceId,

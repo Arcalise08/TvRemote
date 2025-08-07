@@ -1,4 +1,4 @@
-namespace TvServerV2.Models.Samsung;
+namespace TvServer.Models.Samsung;
 
 public record SamsungKeypressRequest(
     string deviceId,

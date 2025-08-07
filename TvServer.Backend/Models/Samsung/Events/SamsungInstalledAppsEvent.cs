@@ -1,4 +1,4 @@
-﻿namespace TvServerV2.Models.Samsung.Events;
+﻿namespace TvServer.Models.Samsung.Events;
 
 
 

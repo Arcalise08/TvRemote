@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using TvServerV2.Models;
+using TvServer.Models;
 
 #nullable disable
 
@@ -21,7 +21,7 @@ namespace TvServerV2.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("TvServerV2.Models.Roku.HardwareModels.RokuApp", b =>
+            modelBuilder.Entity("TvServer.Models.Roku.HardwareModels.RokuApp", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -48,7 +48,7 @@ namespace TvServerV2.Migrations
                     b.ToTable("RokuApp");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Roku.HardwareModels.RokuApps", b =>
+            modelBuilder.Entity("TvServer.Models.Roku.HardwareModels.RokuApps", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -58,7 +58,7 @@ namespace TvServerV2.Migrations
                     b.ToTable("RokuApps");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Roku.HardwareModels.RokuDeviceInfo", b =>
+            modelBuilder.Entity("TvServer.Models.Roku.HardwareModels.RokuDeviceInfo", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -334,7 +334,7 @@ namespace TvServerV2.Migrations
                     b.ToTable("RokuDeviceInfo");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Roku.SavedRokuDeviceEntity", b =>
+            modelBuilder.Entity("TvServer.Models.Roku.SavedRokuDeviceEntity", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(255)
@@ -356,6 +356,9 @@ namespace TvServerV2.Migrations
                     b.Property<string>("RokuAppsId")
                         .HasColumnType("text");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DeviceInfoId");
@@ -365,7 +368,7 @@ namespace TvServerV2.Migrations
                     b.ToTable("RokuDevices");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Samsung.Events.SamsungAppData", b =>
+            modelBuilder.Entity("TvServer.Models.Samsung.Events.SamsungAppData", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -398,7 +401,7 @@ namespace TvServerV2.Migrations
                     b.ToTable("SamsungAppData");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Samsung.HardwareModels.SamsungAdditionalDeviceInfo", b =>
+            modelBuilder.Entity("TvServer.Models.Samsung.HardwareModels.SamsungAdditionalDeviceInfo", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -489,7 +492,7 @@ namespace TvServerV2.Migrations
                     b.ToTable("SamsungAdditionalDeviceInfo");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Samsung.HardwareModels.SamsungTvInfo", b =>
+            modelBuilder.Entity("TvServer.Models.Samsung.HardwareModels.SamsungTvInfo", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -522,7 +525,7 @@ namespace TvServerV2.Migrations
                     b.ToTable("SamsungTvInfo");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Samsung.SavedSamsungDeviceEntity", b =>
+            modelBuilder.Entity("TvServer.Models.Samsung.SavedSamsungDeviceEntity", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(255)
@@ -541,6 +544,13 @@ namespace TvServerV2.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Token")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DeviceInfoId");
@@ -548,20 +558,20 @@ namespace TvServerV2.Migrations
                     b.ToTable("SamsungDevices");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Roku.HardwareModels.RokuApp", b =>
+            modelBuilder.Entity("TvServer.Models.Roku.HardwareModels.RokuApp", b =>
                 {
-                    b.HasOne("TvServerV2.Models.Roku.HardwareModels.RokuApps", null)
+                    b.HasOne("TvServer.Models.Roku.HardwareModels.RokuApps", null)
                         .WithMany("AppList")
                         .HasForeignKey("RokuAppsId");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Roku.SavedRokuDeviceEntity", b =>
+            modelBuilder.Entity("TvServer.Models.Roku.SavedRokuDeviceEntity", b =>
                 {
-                    b.HasOne("TvServerV2.Models.Roku.HardwareModels.RokuDeviceInfo", "DeviceInfo")
+                    b.HasOne("TvServer.Models.Roku.HardwareModels.RokuDeviceInfo", "DeviceInfo")
                         .WithMany()
                         .HasForeignKey("DeviceInfoId");
 
-                    b.HasOne("TvServerV2.Models.Roku.HardwareModels.RokuApps", "RokuApps")
+                    b.HasOne("TvServer.Models.Roku.HardwareModels.RokuApps", "RokuApps")
                         .WithMany()
                         .HasForeignKey("RokuAppsId");
 
@@ -570,37 +580,37 @@ namespace TvServerV2.Migrations
                     b.Navigation("RokuApps");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Samsung.Events.SamsungAppData", b =>
+            modelBuilder.Entity("TvServer.Models.Samsung.Events.SamsungAppData", b =>
                 {
-                    b.HasOne("TvServerV2.Models.Samsung.SavedSamsungDeviceEntity", null)
+                    b.HasOne("TvServer.Models.Samsung.SavedSamsungDeviceEntity", null)
                         .WithMany("SamsungApps")
                         .HasForeignKey("SavedSamsungDeviceEntityId");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Samsung.HardwareModels.SamsungTvInfo", b =>
+            modelBuilder.Entity("TvServer.Models.Samsung.HardwareModels.SamsungTvInfo", b =>
                 {
-                    b.HasOne("TvServerV2.Models.Samsung.HardwareModels.SamsungAdditionalDeviceInfo", "Device")
+                    b.HasOne("TvServer.Models.Samsung.HardwareModels.SamsungAdditionalDeviceInfo", "Device")
                         .WithMany()
                         .HasForeignKey("DeviceId");
 
                     b.Navigation("Device");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Samsung.SavedSamsungDeviceEntity", b =>
+            modelBuilder.Entity("TvServer.Models.Samsung.SavedSamsungDeviceEntity", b =>
                 {
-                    b.HasOne("TvServerV2.Models.Samsung.HardwareModels.SamsungTvInfo", "DeviceInfo")
+                    b.HasOne("TvServer.Models.Samsung.HardwareModels.SamsungTvInfo", "DeviceInfo")
                         .WithMany()
                         .HasForeignKey("DeviceInfoId");
 
                     b.Navigation("DeviceInfo");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Roku.HardwareModels.RokuApps", b =>
+            modelBuilder.Entity("TvServer.Models.Roku.HardwareModels.RokuApps", b =>
                 {
                     b.Navigation("AppList");
                 });
 
-            modelBuilder.Entity("TvServerV2.Models.Samsung.SavedSamsungDeviceEntity", b =>
+            modelBuilder.Entity("TvServer.Models.Samsung.SavedSamsungDeviceEntity", b =>
                 {
                     b.Navigation("SamsungApps");
                 });

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace TvServerV2.Models;
+namespace TvServer.Models;
 
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -114,7 +114,7 @@ public enum DeviceType
     NvidiaShield,
     Other
 }
-
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum DeviceStatus
 {
     Online,

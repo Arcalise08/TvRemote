@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TvServerV2.Models.Roku;
-using TvServerV2.Models.Samsung;
+using TvServer.Models.Roku;
+using TvServer.Models.Samsung;
 
-namespace TvServerV2.Models;
+namespace TvServer.Models;
 
 public class AppDbContext : DbContext
 {

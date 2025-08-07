@@ -1,9 +1,8 @@
 using System.Xml.Serialization;
-using TvServerV2.Models;
-using TvServerV2.Models.Roku;
-using TvServerV2.Models.Roku.HardwareModels;
+using TvServer.Models;
+using TvServer.Models.Roku.HardwareModels;
 
-namespace TvServerV2.Services;
+namespace TvServer.Services;
 
 public class RokuService(
     IHttpClientFactory httpClientFactory)

@@ -1,4 +1,4 @@
-﻿namespace TvServerV2.Models.Samsung.HardwareModels;
+﻿namespace TvServer.Models.Samsung.HardwareModels;
 
 public class SamsungAdditionalDeviceInfo
 {

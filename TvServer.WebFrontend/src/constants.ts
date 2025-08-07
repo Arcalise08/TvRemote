@@ -1,9 +1,5 @@
-export const ST_BASE_URL = "https://api.smartthings.com/v1";
-
-//export const HOME_SERVER_BASE_URL = `http://localhost:4956`;
-//export const HOME_SERVER_BASE_URL = `${window.location.origin}`;
-export const HOME_SERVER_BASE_URL = `http://kyles-pg.local:1123`;
-//export const HOME_SERVER_BASE_URL = `http://localhost:1123`;
+export const ST_BASE_URL = import.meta.env.VITE_ST_BASE_URL;
+export const HOME_SERVER_BASE_URL = import.meta.env.VITE_HOME_SERVER_BASE_URL;
 
 
 export const AsyncTimeout = (duration : number) => new Promise(resolve => setTimeout(resolve, duration));
